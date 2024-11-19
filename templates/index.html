@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>AIアシスタント</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+    </head>
+    <body class="bg-white">
+        <!-- サイドバー -->
+        <div class="flex h-screen">
+            <div class="w-72 border-r bg-gray-50">
+                <div class="p-4">
+                    <button onclick="createNewChat()" class="new-chat-button">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        新しいトーク
+                    </button>
+                </div>
+                
+                <!-- ピン留めしたトーク -->
+                <div class="chat-section">
+                    <h3 class="chat-section-title">📌 ピン留め</h3>
+                    <div id="pinnedChats" class="chat-list"></div>
+                </div>
+
+                <!-- すべてのトーク -->
+                <div class="chat-section">
+                    <h3 class="chat-section-title">💬 すべてのトーク</h3>
+                    <div id="allChats" class="chat-list"></div>
+                </div>
+            </div>
+
+            <!-- メインチャットエリア -->
+            <div class="flex-1 flex flex-col">
+                <div class="p-4 border-b">
+                    <div class="text-sm text-gray-500 text-right">
+                        残りトークン: <span id="remainingTokens">2000</span>
+                        <button onclick="resetTokens()" class="ml-2 text-blue-500 hover:text-blue-600">リセット</button>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4" id="messages">
+                    <!-- ローディング表示用のHTML -->
+                    <div id="loadingMessage" class="hidden">
+                        <div class="flex justify-start mb-4">
+                            <div class="bg-gray-100 rounded-lg px-4 py-2 max-w-[70%] flex items-center">
+                                <div class="typing-indicator">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                                <span class="ml-2">応答を生成中...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t p-4">
+                    <div class="flex space-x-2">
+                        <input 
+                            type="text" 
+                            id="messageInput"
+                            class="flex-1 border rounded-lg px-4 py-2"
+                            placeholder="メッセージを入力...(Shift + Enter で送信)"
+                        >
+                        <button 
+                            onclick="sendMessage()"
+                            class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+                        >
+                            送信
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ボット選択モーダル -->
+        <div id="botSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">AIアシスタントを選択</h2>
+                    <button onclick="closeBotSelector()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <button onclick="selectBot('bot1')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                        <h3 class="font-medium">一般的な質問</h3>
+                        <p class="text-sm text-gray-500">様々な質問に答えます</p>
+                    </button>
+                    <button onclick="selectBot('bot2')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                        <h3 class="font-medium">コードレビュー</h3>
+                        <p class="text-sm text-gray-500">コードの改善提案を行います</p>
+                    </button>
+                    <button onclick="selectBot('bot3')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                        <h3 class="font-medium">ビジネス相談</h3>
+                        <p class="text-sm text-gray-500">ビジネスに関するアドバイスを提供</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- トークのメニューモーダル -->
+        <div id="chatMenu" class="chat-menu hidden">
+            <button onclick="editChatTitle()" class="chat-menu-item">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                タイトルの編集
+            </button>
+            <button onclick="togglePinChat()" class="chat-menu-item">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                </svg>
+                ピン留め
+            </button>
+            <button onclick="deleteChat()" class="chat-menu-item text-red-600">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                削除
+            </button>
+        </div>
+
+        <script>
+            // チャットの状態管理
+            let chats = [];
+            let currentChatId = null;
+            let currentBot = null;
+
+            // トークン管理のクラス
+            class TokenManager {
+                constructor(dailyLimit = 2000) {
+                    this.dailyLimit = dailyLimit;
+                    this.loadFromStorage();
+                }
+
+                loadFromStorage() {
+                    const stored = localStorage.getItem('tokenUsage');
+                    if (stored) {
+                        const data = JSON.parse(stored);
+                        // 日付が変わっていたらリセット
+                        const today = new Date().toDateString();
+                        if (data.date === today) {
+                            this.usedTokens = data.usedTokens;
+                            this.updateDisplay();
+                            return;
+                        }
+                    }
+                    // 新しい日、またはデータがない場合
+                    this.resetTokens();
+                }
+
+                saveToStorage() {
+                    const data = {
+                        date: new Date().toDateString(),
+                        usedTokens: this.usedTokens
+                    };
+                    localStorage.setItem('tokenUsage', JSON.stringify(data));
+                }
+
+                resetTokens() {
+                    this.usedTokens = 0;
+                    this.saveToStorage();
+                    this.updateDisplay();
+                }
+
+                getRemainingTokens() {
+                    return this.dailyLimit - this.usedTokens;
+                }
+
+                useTokens(count) {
+                    this.usedTokens += count;
+                    this.saveToStorage();
+                    this.updateDisplay();
+                    return this.getRemainingTokens();
+                }
+
+                updateDisplay() {
+                    document.getElementById('remainingTokens').textContent = this.getRemainingTokens();
+                }
+            }
+
+            // トークンマネージャーのインスタンスを作成
+            const tokenManager = new TokenManager(2000);
+
+            // LocalStorageからチャット履歴を読み込む
+            function loadChats() {
+                const savedChats = localStorage.getItem('chats');
+                if (savedChats) {
+                    chats = JSON.parse(savedChats);
+                    updateChatList();
+                }
+            }
+
+            // チャット履歴を保存
+            function saveChats() {
+                localStorage.setItem('chats', JSON.stringify(chats));
+            }
+
+            function createNewChat() {
+                const newChat = {
+                    id: Date.now().toString(),
+                    title: '新しいトーク',
+                    messages: [],
+                    pinned: false,
+                    bot: null,
+                    conversation_id: null
+                };
+                
+                chats.push(newChat);
+                currentChatId = newChat.id;
+                updateChatList();
+                saveChats();
+                openBotSelector();
+            }
+
+            function updateChatList() {
+                const pinnedChats = document.getElementById('pinnedChats');
+                const allChats = document.getElementById('allChats');
+                
+                pinnedChats.innerHTML = '';
+                allChats.innerHTML = '';
+                
+                // 作成日時の新しい順にソート
+                const sortedChats = [...chats].sort((a, b) => b.id - a.id);
+                
+                sortedChats.forEach(chat => {
+                    const chatElement = createChatElement(chat);
+                    if (chat.pinned) {
+                        pinnedChats.appendChild(chatElement);
+                    } else {
+                        allChats.appendChild(chatElement);
+                    }
+                });
+            }
+
+            function createChatElement(chat) {
+                const div = document.createElement('div');
+                div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="chat-title">${chat.title}</span>
+                        <button onclick="showChatMenu(event, '${chat.id}')" class="chat-menu-button">
+                            •••
+                        </button>
+                    </div>
+                `;
+                div.onclick = () => selectChat(chat.id);
+                return div;
+            }
+
+            function selectChat(chatId) {
+                currentChatId = chatId;
+                const chat = chats.find(c => c.id === chatId);
+                currentBot = chat.bot;
+                updateChatList();
+                displayMessages(chat.messages);
+            }
+
+            function displayMessages(messages) {
+                const messagesDiv = document.getElementById('messages');
+                // ローディング要素を一時的に保存
+                const loadingMessage = document.getElementById('loadingMessage');
+                messagesDiv.innerHTML = '';
+                
+                messages.forEach(msg => {
+                    messagesDiv.innerHTML += `
+                        <div class="flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-4">
+                            <div class="${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100'} rounded-lg px-4 py-2 max-w-[70%]">
+                                ${msg.content}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // ローディング要素を再追加
+                messagesDiv.appendChild(loadingMessage);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+
+            function showChatMenu(event, chatId) {
+                event.stopPropagation();
+                const menu = document.getElementById('chatMenu');
+                menu.classList.remove('hidden');
+                menu.style.top = `${event.pageY}px`;
+                menu.style.left = `${event.pageX}px`;
+                currentChatId = chatId;
+            }
+
+            function editChatTitle() {
+                const chat = chats.find(c => c.id === currentChatId);
+                const newTitle = prompt('新しいタイトルを入力してください', chat.title);
+                if (newTitle) {
+                    chat.title = newTitle;
+                    updateChatList();
+                    saveChats();
+                }
+                document.getElementById('chatMenu').classList.add('hidden');
+            }
+
+            function togglePinChat() {
+                const chat = chats.find(c => c.id === currentChatId);
+                chat.pinned = !chat.pinned;
+                updateChatList();
+                saveChats();
+                document.getElementById('chatMenu').classList.add('hidden');
+            }
+
+            function deleteChat() {
+                if (confirm('このトークを削除してもよろしいですか？')) {
+                    chats = chats.filter(c => c.id !== currentChatId);
+                    if (currentChatId === currentChatId) {
+                        currentChatId = null;
+                        currentBot = null;
+                        document.getElementById('messages').innerHTML = '';
+                    }
+                    updateChatList();
+                    saveChats();
+                }
+                document.getElementById('chatMenu').classList.add('hidden');
+            }
+
+            // ボット選択関連
+            function openBotSelector() {
+                document.getElementById('botSelector').classList.remove('hidden');
+            }
+
+            function closeBotSelector() {
+                document.getElementById('botSelector').classList.add('hidden');
+            }
+
+            function selectBot(botId) {
+                const chat = chats.find(c => c.id === currentChatId);
+                if (chat) {
+                    chat.bot = botId;
+                    currentBot = botId;
+                    chat.messages.push({
+                        role: 'assistant',
+                        content: 'こんにちは！どのようなお手伝いができますか？'
+                    });
+                    displayMessages(chat.messages);
+                    saveChats();
+                }
+                closeBotSelector();
+            }
+
+            async function sendMessage() {
+                if (!currentBot || !currentChatId) return;
+                
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+                if (!message) return;
+
+                // 入力トークンを計算
+                const inputTokens = calculateTokens(message);
+                const remainingTokens = tokenManager.getRemainingTokens();
+
+                if (inputTokens > remainingTokens) {
+                    alert('トークン制限に達しました');
+                    return;
+                }
+
+                // 入力トークンを消費（送信時）
+                tokenManager.useTokens(inputTokens);
+
+                const chat = chats.find(c => c.id === currentChatId);
+                chat.messages.push({
+                    role: 'user',
+                    content: message
+                });
+                
+                displayMessages(chat.messages);
+                input.value = '';
+
+                // ローディング表示
+                const loadingMessage = document.getElementById('loadingMessage');
+                loadingMessage.classList.remove('hidden');
+
+                try {
+                    const response = await fetch(`/chat/${currentBot}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            conversation_id: chat.conversation_id,
+                            user_id: 'default_user'
+                        })
+                    });
+
+                    const data = await response.json();
+                    loadingMessage.classList.add('hidden');
+
+                    // AIの応答を追加
+                    chat.messages.push({
+                        role: 'assistant',
+                        content: data.answer
+                    });
+
+                    // 出力トークンを計算して消費（応答表示時）
+                    const outputTokens = calculateTokens(data.answer);
+                    tokenManager.useTokens(outputTokens);
+                    
+                    displayMessages(chat.messages);
+                    saveChats();
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    loadingMessage.classList.add('hidden');
+                    
+                    chat.messages.push({
+                        role: 'error',
+                        content: error.message || 'エラーが発生しました。もう一度お試しください。'
+                    });
+                    displayMessages(chat.messages);
+                }
+            }
+
+            // トークン数を計算する関数
+            function calculateTokens(text) {
+                // 日本語文字（漢字、ひらがな、カタカナ）を検出
+                const japaneseChars = (text.match(/[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf\u3400-\u4dbf]/g) || []).length;
+                // 英数字と記号
+                const otherChars = (text.match(/[a-zA-Z0-9\s\W]/g) || []).length;
+                
+                // 日本語は1文字2.5トークン、その他は1文字0.5トークンとして計算
+                const totalTokens = Math.ceil(japaneseChars * 2.5 + otherChars * 0.5);
+                return Math.max(1, totalTokens);  // 最低1トークンを保証
+            }
+
+            // Shift + Enterでメッセージを送信
+            document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // クリック以外でメニューを閉じる
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('chatMenu');
+                if (!menu.contains(e.target) && !e.target.classList.contains('chat-menu-button')) {
+                    menu.classList.add('hidden');
+                }
+            });
+
+            // トークンのリセット（デモ用）
+            function resetTokens() {
+                updateRemainingTokens(2000);
+            }
+
+            function updateRemainingTokens(tokens) {
+                remainingTokens = tokens;
+                document.getElementById('remainingTokens').textContent = tokens;
+            }
+
+            // 初期化
+            loadChats();
+        </script>
+
+        <!-- ローディング表示用のCSS -->
+        <style>
+            .typing-indicator {
+                display: flex;
+                gap: 4px;
+            }
+
+            .typing-indicator span {
+                width: 8px;
+                height: 8px;
+                background-color: #9CA3AF;
+                border-radius: 50%;
+                animation: bounce 1.4s infinite ease-in-out;
+            }
+
+            .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+            .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+            @keyframes bounce {
+                0%, 80%, 100% { transform: scale(0); }
+                40% { transform: scale(1); }
+            }
+        </style>
+    </body>
+</html>
