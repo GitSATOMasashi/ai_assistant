@@ -54,21 +54,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="border-t p-4">
-                    <div class="flex space-x-2">
-                        <input 
-                            type="text" 
-                            id="messageInput"
-                            class="flex-1 border rounded-lg px-4 py-2"
-                            placeholder="メッセージを入力...(Shift + Enter で送信)"
-                        >
-                        <button 
-                            onclick="sendMessage()"
-                            class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
-                        >
-                            送信
-                        </button>
-                    </div>
+                <div class="border-t p-4 flex items-start">
+                    <textarea 
+                        id="messageInput"
+                        class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-y-auto"
+                        placeholder="メッセージを入力...(Shift + Enter で送信)"
+                        rows="1"
+                        style="min-height: 44px;"
+                    ></textarea>
+                    <button onclick="sendMessage()" class="ml-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        送信
+                    </button>
                 </div>
             </div>
         </div>
@@ -436,11 +432,34 @@
                 return Math.max(1, totalTokens);  // 最低1トークンを保証
             }
 
-            // Shift + Enterでメッセージを送信
-            document.getElementById('messageInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
+            // テキストエリアの高さを自動調整する関数を修正
+            function adjustTextareaHeight(textarea) {
+                // 一時的に高さをリセット
+                textarea.style.height = 'auto';
+                
+                // スクロール高さと最大高さを比較
+                const newHeight = Math.min(textarea.scrollHeight, 200);
+                textarea.style.height = newHeight + 'px';
+                
+                // 最大高さを超えた場合、スクロールを有効化
+                textarea.style.overflowY = textarea.scrollHeight > 200 ? 'auto' : 'hidden';
+            }
+
+            // テキストエリアのイベントリスナーを設定
+            document.getElementById('messageInput').addEventListener('input', function(e) {
+                adjustTextareaHeight(this);
+            });
+
+            // キーイベントの処理
+            document.getElementById('messageInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    if (e.shiftKey) {
+                        // Shift + Enter が押された場合は送信
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                    // 通常のEnterは改行を許可（デフォルトの動作）
+                    adjustTextareaHeight(this);
                 }
             });
 
@@ -505,6 +524,32 @@
             @keyframes bounce {
                 0%, 80%, 100% { transform: scale(0); }
                 40% { transform: scale(1); }
+            }
+
+            /* テキストエリアのスタイル */
+            #messageInput {
+                max-height: 200px; /* 最大の高さを制限 */
+                transition: height 0.1s ease;
+                overflow-y: auto !important; /* スクロールを強制的に有効化 */
+            }
+
+            /* スクロールバーのスタイル */
+            #messageInput::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            #messageInput::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 4px;
+            }
+
+            #messageInput::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 4px;
+            }
+
+            #messageInput::-webkit-scrollbar-thumb:hover {
+                background: #555;
             }
         </style>
     </body>
