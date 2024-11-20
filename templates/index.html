@@ -457,8 +457,26 @@
                 document.getElementById('remainingTokens').textContent = tokens;
             }
 
-            // 初期化
-            loadChats();
+            // 初期表示時の処理だけを追加
+            document.addEventListener('DOMContentLoaded', () => {
+                loadChats();
+                
+                if (chats.length === 0) {
+                    // トークが1つもない場合は、ボット選択モーダルを表示
+                    openBotSelector();
+                } else {
+                    // 最新のトークを選択（配列の最後の要素）
+                    const latestChat = chats[chats.length - 1];
+                    currentChatId = latestChat.id;
+                    currentBot = latestChat.bot;
+                    
+                    // 最新のトークを表示
+                    displayMessages(latestChat.messages);
+                    
+                    // サイドバーのトーク一覧を更新
+                    updateChatList();
+                }
+            });
         </script>
 
         <!-- ローディング表示用のCSS -->
