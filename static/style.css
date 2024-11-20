@@ -1,3 +1,7 @@
+body {
+    font-family: "游ゴシック体", "Yu Gothic", YuGothic, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+}
+
 /* チャットコンテナ */
 .chat-container {
     display: flex;
