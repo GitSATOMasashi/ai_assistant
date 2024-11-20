@@ -39,7 +39,7 @@ DIFY_KEYS = {
 
 # トークン管理クラス
 class TokenManager:
-    def __init__(self, daily_limit=2000):
+    def __init__(self, daily_limit=5000):
         self.daily_limit = daily_limit
         self.user_tokens = {}  # {user_id: {"date": date, "count": count}}
     
