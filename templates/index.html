@@ -85,15 +85,15 @@
                     </button>
                 </div>
                 <div class="space-y-3">
-                    <button onclick="selectBot('bot1')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                    <button onclick="selectBot('bot1', '一般的な質問')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
                         <h3 class="font-medium">一般的な質問</h3>
                         <p class="text-sm text-gray-500">様々な質問に答えます</p>
                     </button>
-                    <button onclick="selectBot('bot2')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                    <button onclick="selectBot('bot2', 'コードレビュー')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
                         <h3 class="font-medium">コードレビュー</h3>
                         <p class="text-sm text-gray-500">コードの改善提案を行います</p>
                     </button>
-                    <button onclick="selectBot('bot3')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                    <button onclick="selectBot('bot3', 'ビジネス相談')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
                         <h3 class="font-medium">ビジネス相談</h3>
                         <p class="text-sm text-gray-500">ビジネスに関するアドバイスを提供</p>
                     </button>
@@ -202,7 +202,7 @@
             function createNewChat() {
                 const newChat = {
                     id: Date.now().toString(),
-                    title: '新しいトーク',
+                    title: '※サポート未選択です',
                     messages: [],
                     pinned: false,
                     bot: null,
@@ -331,17 +331,22 @@
                 document.getElementById('botSelector').classList.add('hidden');
             }
 
-            function selectBot(botId) {
+            function selectBot(botId, botTitle) {
                 const chat = chats.find(c => c.id === currentChatId);
                 if (chat) {
                     chat.bot = botId;
+                    chat.title = botTitle;
                     currentBot = botId;
+                    
+                    // 最初のメッセージを自動的に送信
                     chat.messages.push({
                         role: 'assistant',
                         content: 'こんにちは！どのようなお手伝いができますか？'
                     });
+                    
                     displayMessages(chat.messages);
                     saveChats();
+                    updateChatList();
                 }
                 closeBotSelector();
             }
