@@ -196,21 +196,48 @@
                 localStorage.setItem('chats', JSON.stringify(chats));
             }
 
+            // 新しいトークを作成
             function createNewChat() {
                 const newChat = {
                     id: Date.now().toString(),
                     title: '※サポート未選択です',
                     messages: [],
                     pinned: false,
-                    bot: null,
-                    conversation_id: null
+                    bot: null
                 };
                 
                 chats.push(newChat);
                 currentChatId = newChat.id;
+                currentBot = null;
+                currentConversationId = null;  // 新しい会話IDをリセット
+                
+                displayMessages([]);  // メッセージをクリア
                 updateChatList();
                 saveChats();
-                openBotSelector();
+                openBotSelector();  // ボット選択モーダルを開く
+            }
+
+            // チャットボットを選択して紐づけ
+            function selectBot(botId, botTitle) {
+                const chat = chats.find(c => c.id === currentChatId);
+                if (!chat) return;
+                
+                // ボット情報を更新
+                chat.bot = botId;
+                chat.title = botTitle;
+                currentBot = botId;
+                currentConversationId = null;  // 新しい会話を開始
+                
+                // 最初のメッセージを追加
+                chat.messages.push({
+                    role: 'assistant',
+                    content: 'こんにちは！どのようなお手伝いができますか？'
+                });
+                
+                displayMessages(chat.messages);
+                updateChatList();
+                saveChats();
+                closeBotSelector();
             }
 
             function updateChatList() {
@@ -326,26 +353,6 @@
 
             function closeBotSelector() {
                 document.getElementById('botSelector').classList.add('hidden');
-            }
-
-            function selectBot(botId, botTitle) {
-                const chat = chats.find(c => c.id === currentChatId);
-                if (chat) {
-                    chat.bot = botId;
-                    chat.title = botTitle;
-                    currentBot = botId;
-                    
-                    // 最初のメッセージを自動的に送信
-                    chat.messages.push({
-                        role: 'assistant',
-                        content: 'こんにちは！どのようなお手伝いができますか？'
-                    });
-                    
-                    displayMessages(chat.messages);
-                    saveChats();
-                    updateChatList();
-                }
-                closeBotSelector();
             }
 
             async function sendMessage() {
