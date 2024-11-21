@@ -119,7 +119,15 @@ async def chat(bot_id: str, request: dict):
                 json=data
             )
             response.raise_for_status()
-            return response.json()
+            response_data = response.json()
+            
+            # レスポンスの整形
+            if 'answer' in response_data:
+                # HTMLの改行タグに変換
+                answer = response_data['answer'].replace('\n', '<br>')
+                response_data['answer'] = answer
+                
+            return response_data
             
     except Exception as e:
         print(f"Error: {str(e)}")
