@@ -125,7 +125,7 @@
             let currentChatId = null;
             let currentBot = null;
 
-            // トークン管理のクラス
+            // トークン管理のクラスを修正
             class TokenManager {
                 constructor(dailyLimit = 5000) {
                     this.dailyLimit = dailyLimit;
@@ -176,6 +176,39 @@
                 updateDisplay() {
                     document.getElementById('remainingTokens').textContent = this.getRemainingTokens();
                 }
+
+                // トークン計算をサーバーに委譲
+                async calculateTokens(text) {
+                    try {
+                        const response = await fetch('/calculate_tokens', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                text: text,
+                                user_id: 'default_user'  // 必要に応じてユーザーIDを設定
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('トークン計算に失敗しました');
+                        }
+                        
+                        const data = await response.json();
+                        return data.tokens;
+                    } catch (error) {
+                        console.error('トークン計算エラー:', error);
+                        return this.fallbackCalculateTokens(text);
+                    }
+                }
+
+                // フォールバック用のトークン計算（クライアントサイド）
+                fallbackCalculateTokens(text) {
+                    const japaneseChars = (text.match(/[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf\u3400-\u4dbf]/g) || []).length;
+                    const otherChars = (text.match(/[a-zA-Z0-9\s\W]/g) || []).length;
+                    return Math.max(1, Math.ceil(japaneseChars * 2.5 + otherChars * 0.5));
+                }
             }
 
             // トークンマネージャーのインスタンスを作成
@@ -220,14 +253,14 @@
             const BOT_INITIAL_MESSAGES = {
                 bot1: {
                     title: 'プロンプトを作る',
-                    message: `プロンプト作成のお手伝いをさせていただきます。
-以下の項目について、順番にお聞かせください：
-
-1. プロンプトの目的（何を作りたいのか）
-2. 想定する入力（どんな情報を与えるのか）
-3. 期待する出力（どんな結果が欲しいのか）
-
-まずは、プロンプトの目的についてお聞かせください。`
+                    message: `プロンプト作成のお手伝いをさせていただきます。<br>
+                    以下の項目について、順番にお聞かせください：<br>
+                    <br>
+                    1. プロンプトの目的（何を作りたいのか）<br>
+                    2. 想定する入力（どんな情報を与えるのか）<br>
+                    3. 期待する出力（どんな結果が欲しいのか）<br>
+                    <br>
+                    まずは、プロンプトの目的についてお聞かせください。`
                 },
                 bot2: {
                     title: '準備中1',
@@ -386,39 +419,58 @@
             }
 
             async function sendMessage() {
-                if (!currentBot || !currentChatId) return;
+                // ボット選択チェックは維持
+                if (!currentBot) {
+                    showBotSelector();
+                    return;
+                }
                 
                 const input = document.getElementById('messageInput');
                 const message = input.value.trim();
                 if (!message) return;
 
-                // 入力トークンを計算
-                const inputTokens = calculateTokens(message);
-                const remainingTokens = tokenManager.getRemainingTokens();
-
-                if (inputTokens > remainingTokens) {
-                    alert('トークン制限に達しました');
-                    return;
-                }
-
-                // 入力トークンを消費（送信時）
-                tokenManager.useTokens(inputTokens);
-
-                const chat = chats.find(c => c.id === currentChatId);
-                chat.messages.push({
-                    role: 'user',
-                    content: message
-                });
-                
-                displayMessages(chat.messages);
-                input.value = '';
-
-                // ローディング表示
-                const loadingMessage = document.getElementById('loadingMessage');
-                loadingMessage.classList.remove('hidden');
-
                 try {
-                    const response = await fetch(`/chat/${currentBot}`, {
+                    // 入力メッセージのトークン数を計算
+                    const response = await fetch('/calculate_tokens', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ text: message })
+                    });
+                    
+                    const tokenData = await response.json();
+                    
+                    // トークン計算方法をログ表示
+                    console.log(
+                        `トークン計算: ${tokenData.tokens}トークン ` +
+                        `(計算方法: ${tokenData.method === 'tiktoken' ? 'tiktoken (Claude)' : 'フォールバック'})` +
+                        `${tokenData.success ? '✅' : '⚠️'}`
+                    );
+
+                    // トークン制限チェック
+                    if (tokenData.tokens > tokenData.remaining_tokens) {
+                        alert('トークン制限に達しました');
+                        return;
+                    }
+
+                    // 入力トークンを消費（ユーザー送信時）
+                    tokenManager.useTokens(tokenData.tokens);
+
+                    const chat = chats.find(c => c.id === currentChatId);
+                    chat.messages.push({
+                        role: 'user',
+                        content: message
+                    });
+                    
+                    displayMessages(chat.messages);
+                    input.value = '';
+
+                    // ローディング表示
+                    const loadingMessage = document.getElementById('loadingMessage');
+                    loadingMessage.classList.remove('hidden');
+
+                    const apiResponse = await fetch(`/chat/${currentBot}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -429,7 +481,7 @@
                         })
                     });
 
-                    const data = await response.json();
+                    const data = await apiResponse.json();
                     loadingMessage.classList.add('hidden');
 
                     // AIの応答を追加
@@ -438,8 +490,26 @@
                         content: data.answer
                     });
 
-                    // 出力トークンを計算して消費（応答表示時）
-                    const outputTokens = calculateTokens(data.answer);
+                    // AIの応答を受信後、応答のトークン数も計算
+                    const outputTokenResponse = await fetch('/calculate_tokens', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ text: data.answer })
+                    });
+                    
+                    const outputTokenData = await outputTokenResponse.json();
+                    
+                    // 応答のトークン数をログ表示
+                    console.log(
+                        `応答トークン: ${outputTokenData.tokens}トークン ` +
+                        `(計算方法: ${outputTokenData.method === 'tiktoken' ? 'tiktoken (Claude)' : 'フォールバック'})` +
+                        `${outputTokenData.success ? '✅' : '⚠️'}`
+                    );
+
+                    // 出力トークンを計算（サーバーサイド）
+                    const outputTokens = await tokenManager.calculateTokens(data.answer);
                     tokenManager.useTokens(outputTokens);
                     
                     displayMessages(chat.messages);
@@ -461,18 +531,6 @@
                     });
                     displayMessages(chat.messages);
                 }
-            }
-
-            // トークン数を計算する関数
-            function calculateTokens(text) {
-                // 日本語文字（漢字、ひらがな、カタカナ）を検出
-                const japaneseChars = (text.match(/[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf\u3400-\u4dbf]/g) || []).length;
-                // 英数字と記号
-                const otherChars = (text.match(/[a-zA-Z0-9\s\W]/g) || []).length;
-                
-                // 日本語は1文字2.5トークン、その他は1文字0.5トークンとして計算
-                const totalTokens = Math.ceil(japaneseChars * 2.5 + otherChars * 0.5);
-                return Math.max(1, totalTokens);  // 最低1トークンを保証
             }
 
             // テキストエリアの高さを自動調整する関数を修正

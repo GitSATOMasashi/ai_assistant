@@ -41,18 +41,30 @@ DIFY_KEYS = {
 class TokenManager:
     def __init__(self, daily_limit=5000):
         self.daily_limit = daily_limit
-        self.user_tokens = {}  # {user_id: {"date": date, "count": count}}
+        self.user_tokens = {}
+        # Claudeのエンコーディングを使用
+        self.encoding = tiktoken.get_encoding("cl100k_base")
     
-    def count_tokens(self, text: str) -> int:
-        # 日本語文字（漢字、ひらがな、カタカナ）を検出
-        japanese_chars = len(re.findall(r'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf\u3400-\u4dbf]', text))
-        # 英数字と記号
-        other_chars = len(re.findall(r'[a-zA-Z0-9\s\W]', text))
-        
-        # 日本語は1文字2.5トークン、その他は1文字0.5トークンとして計算
-        total_tokens = int(japanese_chars * 2.5 + other_chars * 0.5)
-        return max(1, total_tokens)  # 最低1トークンを保証
-    
+    def count_tokens(self, text: str) -> dict:
+        try:
+            # tiktokenでトークン数を計算
+            tokens = self.encoding.encode(text)
+            return {
+                "tokens": len(tokens),
+                "method": "tiktoken",  # 計算方法を示す
+                "success": True
+            }
+        except Exception as e:
+            print(f"Token counting error: {e}")
+            # フォールバック: 簡易的な計算方法
+            japanese_chars = len([c for c in text if '\u3000' <= c <= '\u9fff'])
+            other_chars = len(text) - japanese_chars
+            return {
+                "tokens": max(1, int(japanese_chars * 2.5 + other_chars * 0.5)),
+                "method": "fallback",  # 計算方法を示す
+                "success": False
+            }
+
     def check_and_update_tokens(self, user_id: str, text: str) -> tuple[bool, int]:
         today = datetime.date.today()
         
@@ -80,18 +92,18 @@ async def root(request: Request):
 
 @app.post("/calculate_tokens")
 async def calculate_tokens(request: dict):
-    user_id = request.get("user_id", "default_user")
     text = request.get("text", "")
+    user_id = request.get("user_id", "default_user")
     
-    # トークンを計算して消費
-    can_proceed, remaining_tokens = token_manager.check_and_update_tokens(user_id, text)
-    if not can_proceed:
-        raise HTTPException(
-            status_code=429,
-            detail={"error": "Daily token limit exceeded", "remaining_tokens": remaining_tokens}
-        )
+    # トークン数を計算（消費はしない）
+    token_info = token_manager.count_tokens(text)
     
-    return {"remaining_tokens": remaining_tokens}
+    return {
+        "tokens": token_info["tokens"],
+        "method": token_info["method"],
+        "success": token_info["success"],
+        "remaining_tokens": token_manager.daily_limit - token_manager.user_tokens.get(user_id, {"count": 0})["count"]
+    }
 
 @app.post("/chat/{bot_id}")
 async def chat(bot_id: str, request: dict):
