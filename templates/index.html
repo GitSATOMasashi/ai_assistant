@@ -494,7 +494,7 @@
                 
                 if (chats.length === 0) {
                     // トークが1つもない場合は、ボット選択モーダルを表示
-                    openBotSelector();
+                    createNewChat();
                 } else {
                     // 最新のトークを選択（配列の最後の要素）
                     const latestChat = chats[chats.length - 1];
