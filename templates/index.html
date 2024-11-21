@@ -124,7 +124,6 @@
             let chats = [];
             let currentChatId = null;
             let currentBot = null;
-            let currentConversationId = null;  // 会話IDを保持
 
             // トークン管理のクラス
             class TokenManager {
@@ -203,13 +202,13 @@
                     title: '※サポート未選択です',
                     messages: [],
                     pinned: false,
-                    bot: null
+                    bot: null,
+                    conversation_id: null  // 各トーク固有の会話ID
                 };
                 
                 chats.push(newChat);
                 currentChatId = newChat.id;
                 currentBot = null;
-                currentConversationId = null;  // 新しい会話IDをリセット
                 
                 displayMessages([]);  // メッセージをクリア
                 updateChatList();
@@ -226,7 +225,6 @@
                 chat.bot = botId;
                 chat.title = botTitle;
                 currentBot = botId;
-                currentConversationId = null;  // 新しい会話を開始
                 
                 // 最初のメッセージを追加
                 chat.messages.push({
@@ -395,7 +393,7 @@
                         },
                         body: JSON.stringify({
                             message: message,
-                            conversation_id: currentConversationId  // 既存の会話IDがあれば送信
+                            conversation_id: chat.conversation_id  // 各トーク固有の会話IDを使用
                         })
                     });
 
@@ -417,7 +415,8 @@
                     
                     // 新しい会話IDを保存
                     if (data.conversation_id) {
-                        currentConversationId = data.conversation_id;
+                        chat.conversation_id = data.conversation_id;
+                        saveChats();  // LocalStorageに保存
                     }
                     
                 } catch (error) {
