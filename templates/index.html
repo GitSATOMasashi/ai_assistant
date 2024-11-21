@@ -318,6 +318,7 @@
                     chat.title = newTitle;
                     updateChatList();
                     saveChats();
+                    displayMessages(chat.messages);  // 現在のメッセージを再表示
                 }
                 document.getElementById('chatMenu').classList.add('hidden');
             }
@@ -327,17 +328,25 @@
                 chat.pinned = !chat.pinned;
                 updateChatList();
                 saveChats();
+                displayMessages(chat.messages);  // 現在のメッセージを再表示
                 document.getElementById('chatMenu').classList.add('hidden');
             }
 
             function deleteChat() {
                 if (confirm('このトークを削除してもよろしいですか？')) {
                     chats = chats.filter(c => c.id !== currentChatId);
-                    if (currentChatId === currentChatId) {
-                        currentChatId = null;
-                        currentBot = null;
-                        document.getElementById('messages').innerHTML = '';
+                    
+                    // 他のトークがある場合は最新のトークを選択
+                    if (chats.length > 0) {
+                        const latestChat = chats[chats.length - 1];
+                        currentChatId = latestChat.id;
+                        currentBot = latestChat.bot;
+                        displayMessages(latestChat.messages);
+                    } else {
+                        // トークがない場合は新しいトークを作成
+                        createNewChat();
                     }
+                    
                     updateChatList();
                     saveChats();
                 }
