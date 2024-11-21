@@ -124,6 +124,7 @@
             let chats = [];
             let currentChatId = null;
             let currentBot = null;
+            let currentConversationId = null;  // 会話IDを保持
 
             // トークン管理のクラス
             class TokenManager {
@@ -387,8 +388,7 @@
                         },
                         body: JSON.stringify({
                             message: message,
-                            conversation_id: chat.conversation_id,
-                            user_id: 'default_user'
+                            conversation_id: currentConversationId  // 既存の会話IDがあれば送信
                         })
                     });
 
@@ -407,6 +407,11 @@
                     
                     displayMessages(chat.messages);
                     saveChats();
+                    
+                    // 新しい会話IDを保存
+                    if (data.conversation_id) {
+                        currentConversationId = data.conversation_id;
+                    }
                     
                 } catch (error) {
                     console.error('Error:', error);
@@ -496,6 +501,12 @@
                     updateChatList();
                 }
             });
+
+            // チャットをクリアする時に会話IDもリセット
+            function clearChat() {
+                chatMessages.innerHTML = '';
+                currentConversationId = null;
+            }
         </script>
 
         <!-- ローディング表示用のCSS -->

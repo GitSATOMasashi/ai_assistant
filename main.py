@@ -103,13 +103,20 @@ async def chat(bot_id: str, request: dict):
         "Content-Type": "application/json"
     }
     
+    # 基本のリクエストデータ
     data = {
         "inputs": {},
         "query": request["message"],
         "response_mode": "blocking",
-        "conversation_id": request.get("conversation_id"),
         "user": request.get("user_id", "default_user")
     }
+    
+    # 継続会話の場合のみconversation_idを含める
+    if "conversation_id" in request and request["conversation_id"]:
+        data["conversation_id"] = request["conversation_id"]
+        print(f"Continuing conversation: {request['conversation_id']}")
+    else:
+        print("Starting new conversation")
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -126,6 +133,10 @@ async def chat(bot_id: str, request: dict):
                 # HTMLの改行タグに変換
                 answer = response_data['answer'].replace('\n', '<br>')
                 response_data['answer'] = answer
+            
+            # 会話IDをログに出力（デバッグ用）
+            if 'conversation_id' in response_data:
+                print(f"Response conversation_id: {response_data['conversation_id']}")
                 
             return response_data
             

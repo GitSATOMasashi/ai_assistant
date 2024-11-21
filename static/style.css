@@ -249,7 +249,7 @@ body {
     background-color: #f3f4f6;
 }
 
-/* 本番環境では非表示 */
+/* 本番環境では非表示 
 .dev-only {
     display: none;
-}
+}*/
