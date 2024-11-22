@@ -253,13 +253,13 @@
             const BOT_INITIAL_MESSAGES = {
                 bot1: {
                     title: 'プロンプトを作る',
-                    message: `プロンプト作成のお手伝いをさせていただきます。<br>
-                    以下の項目について、順番にお聞かせください：<br>
-                    <br>
-                    1. プロンプトの目的（何を作りたいのか）<br>
-                    2. 想定する入力（どんな情報を与えるのか）<br>
-                    3. 期待する出力（どんな結果が欲しいのか）<br>
-                    <br>
+                    message: `プロンプト作成のお手伝いをさせていただきます。
+                    以下の項目について、順番にお聞かせください：
+                    
+                    1. プロンプトの目的（何を作りたいのか）
+                    2. 想定する入力（どんな情報を与えるのか）
+                    3. 期待する出力（どんな結果が欲しいのか）
+                    
                     まずは、プロンプトの目的についてお聞かせください。`
                 },
                 bot2: {
@@ -341,20 +341,39 @@
                 const messagesDiv = document.getElementById('messages');
                 // ローディング要素を一時的に保存
                 const loadingMessage = document.getElementById('loadingMessage');
+                const loading = loadingMessage.cloneNode(true);
+                
                 messagesDiv.innerHTML = '';
                 
-                messages.forEach(msg => {
-                    messagesDiv.innerHTML += `
-                        <div class="flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-4">
-                            <div class="${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100'} rounded-lg px-4 py-2 max-w-[70%]">
-                                ${msg.content}
-                            </div>
-                        </div>
-                    `;
+                messages.forEach(message => {
+                    // contentが存在することを確認
+                    if (!message || !message.content) {
+                        console.warn('Invalid message format:', message);
+                        return;
+                    }
+
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} py-2`;
+                    
+                    let content = message.content;
+                    
+                    // 改行を<br>に変換
+                    content = content.replace(/\n/g, '<br>');
+                    
+                    const messageClass = message.role === 'user' 
+                        ? 'bg-blue-500 text-white' 
+                        : message.role === 'error' 
+                            ? 'bg-red-100 text-red-600'
+                            : 'bg-gray-100';
+
+                    messageDiv.innerHTML = 
+                        `<div class="${messageClass} rounded-lg px-4 py-2 max-w-[70%] whitespace-pre-line">${content}</div>`;
+                    
+                    messagesDiv.appendChild(messageDiv);
                 });
                 
                 // ローディング要素を再追加
-                messagesDiv.appendChild(loadingMessage);
+                messagesDiv.appendChild(loading);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
 
