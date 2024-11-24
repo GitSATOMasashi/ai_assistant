@@ -23,11 +23,35 @@
         <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
     </head>
     <body class="bg-white">
-        <!-- サイドバー -->
-        <div class="flex h-screen">
-            <div class="w-72 border-r bg-gray-50">
-                <div class="p-4">
-                    <button onclick="createNewChat()" class="new-chat-button bg-primary hover:bg-primary-light">
+        <!-- ヘッダーを追加 -->
+        <header class="fixed top-0 left-0 right-0 h-14 bg-white border-b z-50 flex items-center">
+            <div class="w-72 px-4 border-r h-full flex items-center">
+                <div class="flex items-center space-x-2">
+                    <!-- ロゴアイコン -->
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                    <span class="text-lg font-bold text-primary">AI Assistant</span>
+                </div>
+            </div>
+            <div class="flex-1 px-6 flex justify-between items-center">
+                <div class="text-sm text-gray-500">
+                    <!-- 必要に応じて追加のヘッダー情報 -->
+                </div>
+                <div class="text-sm text-gray-500">
+                    本日の残りトークン数: <span id="remainingTokens">30000</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- メインコンテンツのラッパー -->
+        <div class="flex h-screen pt-14">
+            <!-- サイドバー: h-screenからpt-14を引いた高さにする -->
+            <div class="w-72 border-r bg-gray-50 overflow-y-auto" style="height: calc(100vh - 3.5rem);">
+                <!-- 新しいトークボタンを固定表示 -->
+                <div class="sticky top-0 p-4 bg-gray-50 border-b z-10">
+                    <button onclick="createNewChat()" class="new-chat-button w-full flex items-center justify-center bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -35,27 +59,24 @@
                     </button>
                 </div>
                 
-                <!-- ピン留めしたトーク -->
-                <div class="chat-section">
-                    <h3 class="chat-section-title">ピン留め</h3>
-                    <div id="pinnedChats" class="chat-list"></div>
-                </div>
+                <!-- チャットリスト -->
+                <div class="px-4">
+                    <!-- ピン留めしたトーク -->
+                    <div class="chat-section">
+                        <h3 class="chat-section-title">ピン留め</h3>
+                        <div id="pinnedChats" class="chat-list"></div>
+                    </div>
 
-                <!-- すべてのトーク -->
-                <div class="chat-section">
-                    <h3 class="chat-section-title">すべてのトーク</h3>
-                    <div id="allChats" class="chat-list"></div>
+                    <!-- すべてのトーク -->
+                    <div class="chat-section">
+                        <h3 class="chat-section-title">すべてのトーク</h3>
+                        <div id="allChats" class="chat-list"></div>
+                    </div>
                 </div>
             </div>
 
             <!-- メインチャットエリア -->
             <div class="flex-1 flex flex-col">
-                <div class="p-4 border-b">
-                    <div class="text-sm text-gray-500 text-right">
-                        残りトークン: <span id="remainingTokens">30000</span>
-                        <button onclick="resetTokens()" class="ml-2 text-blue-500 hover:text-blue-600 dev-only">リセット</button>
-                    </div>
-                </div>
                 <div class="flex-1 overflow-y-auto p-4" id="messages">
                     <!-- ローディング表示用のHTML -->
                     <div id="loadingMessage" class="hidden">
@@ -747,6 +768,10 @@
             /* リセットボタンの色を修正 */
             .text-blue-500 { @apply text-primary; }
             .hover:text-blue-600 { @apply hover:text-primary-dark; }
+
+            .new-chat-button {
+                @apply w-full flex items-center justify-center bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors;
+            }
         </style>
     </body>
 </html>

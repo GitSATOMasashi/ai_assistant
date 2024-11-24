@@ -249,6 +249,13 @@ body {
     background-color: #f3f4f6;
 }
 
+.border-r {
+    border-right: 0px !important;
+}
+.border-b {
+    border-bottom: 0px !important;
+}
+
 /* 本番環境では非表示 */
 .dev-only {
     display: none;
