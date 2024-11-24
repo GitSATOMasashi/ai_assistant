@@ -48,7 +48,7 @@
                 <div class="flex items-center gap-4">
                     <button 
                         onclick="resetTokens()" 
-                        class="px-3 py-1 text-sm text-white/80 hover:text-white border border-white/20 rounded hover:bg-white/10 transition-colors"
+                        class="dev-only px-3 py-1 text-sm text-white/80 hover:text-white border border-white/20 rounded hover:bg-white/10 transition-colors"
                         title="トークン数をリセットします"
                     >
                         リセット
@@ -212,7 +212,7 @@
 
             // トークン管理のクラスを修正
             class TokenManager {
-                constructor(dailyLimit = 1000) {
+                constructor(dailyLimit = 30000) {
                     this.dailyLimit = dailyLimit;
                     this.loadFromStorage();
                 }
@@ -297,7 +297,7 @@
             }
 
             // トークンマネージャーのインスタンスを作成
-            const tokenManager = new TokenManager(1000);
+            const tokenManager = new TokenManager(30000);
 
             // LocalStorageからチャット履歴を読み込む
             function loadChats() {
