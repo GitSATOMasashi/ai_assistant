@@ -510,7 +510,7 @@
             async function sendMessage() {
                 // 先頭でトークン制限をチェック
                 if (!canSendMessage()) {
-                    alert('トークン制限に達しました');
+                    alert(getTokenLimitMessage());
                     return;
                 }
 
@@ -546,10 +546,10 @@
 
                     // トークン制限チェック
                     if (tokenData.remaining_tokens <= 0) {  // 残りトークンが0以下の場合
-                        alert('トークン制限に達しました');
+                        alert(getTokenLimitMessage());
                         return;
                     } else if (tokenData.tokens > tokenData.remaining_tokens) {  // 必要なトークン数が残りトークン数を超える場合
-                        alert('トークン制限に達しました');
+                        alert(getTokenLimitMessage());
                         return;
                     }
 
@@ -611,7 +611,7 @@
                     // レスポンス後のトークン制限チェック
                     const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
                     if (remainingTokens <= 0) {
-                        alert('トークン制限に達しました。これ以上の会話はできません。');
+                        alert(getTokenLimitMessage());
                         return;
                     }
 
@@ -665,7 +665,7 @@
                         // Shift + Enter が押された場合は送信
                         e.preventDefault();
                         if (!canSendMessage()) {
-                            alert('トークン制限に達しました');
+                            alert(getTokenLimitMessage());
                             return;
                         }
                         sendMessage();
@@ -742,7 +742,7 @@
                 
                 if (!canSendMessage()) {
                     sendButton.disabled = true;
-                    sendButton.title = 'トークン制限に達しました';
+                    sendButton.title = getTokenLimitMessage().split('\n')[0];  // タイトルには1行目だけ表示
                 } else {
                     sendButton.disabled = false;
                     sendButton.removeAttribute('title');
@@ -772,6 +772,36 @@
                 const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent) - outputTokenData.tokens;
                 document.getElementById('remainingTokens').textContent = remainingTokens;
                 updateSendButtonState();  // ここで更新
+            }
+
+            // トークン制限メッセージを生成する関数を追加
+            function getTokenLimitMessage() {
+                const totalTokens = 30000;  // 1日の上限トークン数
+                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
+                const usedTokens = totalTokens - remainingTokens;
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                
+                return `【トークン制限のお知らせ】
+
+トークンの本日分使用枠を使い切りました。
+
+■ 次回利用可能時間
+${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}日 0:00から
+
+■ 現在の使用状況
+本日の使用量: ${usedTokens.toLocaleString()} トークン
+1日の上限: ${totalTokens.toLocaleString()} トークン
+
+■ ご利用再開までの選択肢
+1. 深夜0時の自動リセットをお待ちください
+2. トークン使用枠の増枠をご検討ください
+   → サポートLINEにてご相談を承ります。
+   「講座生成ツールのトークン増枠」とお伝えください。
+
+ご不便をおかけし申し訳ございません。
+引き続きのご利用をお待ちしております。`;
             }
         </script>
 
