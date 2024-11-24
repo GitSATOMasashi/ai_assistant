@@ -45,8 +45,17 @@
                 <div class="text-sm text-white/70">
                     <!-- 必要に応じて追加のヘッダー情報 -->
                 </div>
-                <div class="text-sm text-white/90">
-                    本日の残りトークン数: <span id="remainingTokens">1,000</span>
+                <div class="flex items-center gap-4">
+                    <button 
+                        onclick="resetTokens()" 
+                        class="px-3 py-1 text-sm text-white/80 hover:text-white border border-white/20 rounded hover:bg-white/10 transition-colors"
+                        title="トークン数をリセットします"
+                    >
+                        リセット
+                    </button>
+                    <div class="text-sm text-white/90">
+                        本日の残りトークン数: <span id="remainingTokens">1,000</span>
+                    </div>
                 </div>
             </div>
         </header>
