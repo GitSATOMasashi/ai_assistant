@@ -40,7 +40,7 @@ DIFY_KEYS = {
 
 # トークン管理クラス
 class TokenManager:
-    def __init__(self, daily_limit=1000):
+    def __init__(self, daily_limit=30000):
         self.daily_limit = daily_limit
         self.user_tokens = {}
         # Claudeのエンコーディングを使用
