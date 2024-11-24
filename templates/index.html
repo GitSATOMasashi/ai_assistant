@@ -606,6 +606,28 @@
                         })
                     });
 
+                    if (!apiResponse.ok) {
+                        let errorMessage = 'エラーが発生しました。';
+                        if (apiResponse.status === 500) {
+                            errorMessage = `
+【APIエラー】
+申し訳ありません。サーバーでエラーが発生しました。
+
+考えられる原因:
+1. 応答生成のタイムアウト
+2. サーバーの一時的な問題
+3. トークン制限の超過
+
+対処方法:
+1. しばらく待ってから再度お試しください
+2. メッセージを短く分けて送信してみてください
+3. ブラウザをリロードしてください
+
+エラーが続く場合は、サポートまでご連絡ください。`;
+                        }
+                        throw new Error(errorMessage);
+                    }
+
                     const data = await apiResponse.json();
                     loadingMessage.classList.add('hidden');
 
