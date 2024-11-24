@@ -427,8 +427,16 @@
                 messagesDiv.innerHTML = '';
                 
                 messages.forEach(message => {
-                    if (!message || !message.content) {
-                        console.warn('Invalid message format:', message);
+                    if (!message) {
+                        console.warn('Message object is null or undefined');
+                        return;
+                    }
+                    if (!message.role) {
+                        console.warn('Message role is missing:', message);
+                        return;
+                    }
+                    if (!message.content) {
+                        console.warn(`Content is missing for ${message.role} message`);
                         return;
                     }
 
