@@ -40,7 +40,7 @@ DIFY_KEYS = {
 
 # トークン管理クラス
 class TokenManager:
-    def __init__(self, daily_limit=30000):
+    def __init__(self, daily_limit=1000):
         self.daily_limit = daily_limit
         self.user_tokens = {}
         # Claudeのエンコーディングを使用
@@ -110,6 +110,30 @@ async def calculate_tokens(request: dict):
 async def chat(bot_id: str, request: dict):
     if bot_id not in DIFY_KEYS:
         raise HTTPException(status_code=400, detail="Invalid bot ID")
+    
+    # トークン制限のチェックと更新
+    user_id = request.get("user_id", "default_user")
+    token_info = token_manager.count_tokens(request["message"])
+    
+    # 現在の残りトークン数を取得
+    current_tokens = token_manager.user_tokens.get(user_id, {"count": 0})["count"]
+    remaining_tokens = token_manager.daily_limit - current_tokens
+    
+    # トークン制限チェック
+    if token_info["tokens"] > remaining_tokens:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "トークン制限に達しました",
+                "remaining_tokens": remaining_tokens
+            }
+        )
+    
+    # トークンを消費
+    token_manager.user_tokens[user_id] = {
+        "date": datetime.date.today(),
+        "count": current_tokens + token_info["tokens"]
+    }
     
     headers = {
         "Authorization": f"Bearer {DIFY_KEYS[bot_id]}",

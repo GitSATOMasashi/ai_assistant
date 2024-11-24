@@ -46,7 +46,7 @@
                     <!-- 必要に応じて追加のヘッダー情報 -->
                 </div>
                 <div class="text-sm text-white/90">
-                    本日の残りトークン数: <span id="remainingTokens">30000</span>
+                    本日の残りトークン数: <span id="remainingTokens">1,000</span>
                 </div>
             </div>
         </header>
@@ -106,7 +106,12 @@
                         rows="1"
                         style="min-height: 44px;"
                     ></textarea>
-                    <button onclick="sendMessage()" class="ml-2 bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg">
+                    <button 
+                        id="sendButton" 
+                        onclick="sendMessage()" 
+                        class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled
+                    >
                         送信
                     </button>
                 </div>
@@ -168,6 +173,11 @@
         </div>
 
         <script>
+            function canSendMessage() {
+                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
+                return remainingTokens > 0;
+            }
+            
             // チャットの状態管理
             let chats = [];
             let currentChatId = null;
@@ -175,7 +185,7 @@
 
             // トークン管理のクラスを修正
             class TokenManager {
-                constructor(dailyLimit = 30000) {
+                constructor(dailyLimit = 1000) {
                     this.dailyLimit = dailyLimit;
                     this.loadFromStorage();
                 }
@@ -260,7 +270,7 @@
             }
 
             // トークンマネージャーのインスタンスを作成
-            const tokenManager = new TokenManager(30000);
+            const tokenManager = new TokenManager(1000);
 
             // LocalStorageからチャット履歴を読み込む
             function loadChats() {
@@ -520,7 +530,10 @@
                     );
 
                     // トークン制限チェック
-                    if (tokenData.tokens > tokenData.remaining_tokens) {
+                    if (tokenData.remaining_tokens <= 0) {  // 残りトークンが0以下の場合
+                        alert('トークン制限に達しました');
+                        return;
+                    } else if (tokenData.tokens > tokenData.remaining_tokens) {  // 必要なトークン数が残りトークン数を超える場合
                         alert('トークン制限に達しました');
                         return;
                     }
@@ -580,6 +593,13 @@
                         `${outputTokenData.success ? '✅' : '⚠️'}`
                     );
 
+                    // レスポンス後のトークン制限チェック
+                    const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
+                    if (remainingTokens <= 0) {
+                        alert('トークン制限に達しました。これ以上の会話はできません。');
+                        return;
+                    }
+
                     // 出力トークンを計算（サーバーサイド）
                     const outputTokens = await tokenManager.calculateTokens(data.answer);
                     tokenManager.useTokens(outputTokens);
@@ -629,6 +649,10 @@
                     if (e.shiftKey) {
                         // Shift + Enter が押された場合は送信
                         e.preventDefault();
+                        if (!canSendMessage()) {
+                            alert('トークン制限に達しました');
+                            return;
+                        }
                         sendMessage();
                     }
                     // 通常のEnterは改行を許可（デフォルトの動作）
@@ -694,6 +718,45 @@
                         button.innerHTML = originalText;
                     }, 2000);
                 });
+            }
+
+            // トークン数に基づいて送信ボタンの状態を更新する関数
+            function updateSendButtonState() {
+                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
+                const sendButton = document.getElementById('sendButton');
+                
+                if (!canSendMessage()) {
+                    sendButton.disabled = true;
+                    sendButton.title = 'トークン制限に達しました';
+                } else {
+                    sendButton.disabled = false;
+                    sendButton.removeAttribute('title');
+                }
+            }
+
+            // ページ読み込み時
+            document.addEventListener('DOMContentLoaded', updateSendButtonState);
+
+            // トークン計算の関数内で
+            async function calculateTokens(message) {
+                // ... 既存のコード ...
+                const response = await fetch('/calculate_tokens', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: message, user_id: userId })
+                });
+                const tokenData = await response.json();
+                document.getElementById('remainingTokens').textContent = tokenData.remaining_tokens;
+                updateSendButtonState();  // ここで更新
+                return tokenData;
+            }
+
+            // メッセージ送信後のレスポンス処理時
+            async function handleResponse(response) {
+                // ... 既存のコード ...
+                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent) - outputTokenData.tokens;
+                document.getElementById('remainingTokens').textContent = remainingTokens;
+                updateSendButtonState();  // ここで更新
             }
         </script>
 
