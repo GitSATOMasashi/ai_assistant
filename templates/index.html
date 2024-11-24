@@ -51,7 +51,7 @@
             <div class="w-72 border-r bg-gray-50 overflow-y-auto" style="height: calc(100vh - 3.5rem);">
                 <!-- 新しいトークボタンを固定表示 -->
                 <div class="sticky top-0 p-4 bg-gray-50 border-b z-10">
-                    <button onclick="createNewChat()" class="new-chat-button w-full flex items-center justify-center bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors">
+                    <button onclick="createNewChat()" class="new-chat-button w-full flex items-center justify-center bg-gray-50 text-primary border-2 border-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg transition-colors">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -770,7 +770,7 @@
             .hover:text-blue-600 { @apply hover:text-primary-dark; }
 
             .new-chat-button {
-                @apply w-full flex items-center justify-center bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors;
+                @apply w-full flex items-center justify-center bg-gray-50 text-primary border-2 border-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg transition-colors;
             }
         </style>
     </body>
