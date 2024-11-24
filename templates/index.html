@@ -51,7 +51,7 @@
             <div class="w-72 border-r bg-gray-50 overflow-y-auto" style="height: calc(100vh - 3.5rem);">
                 <!-- 新しいトークボタンを固定表示 -->
                 <div class="sticky top-0 p-4 bg-gray-50 border-b z-10">
-                    <button onclick="createNewChat()" class="new-chat-button w-full flex items-center justify-center bg-gray-50 text-primary border-2 border-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg transition-colors">
+                    <button onclick="createNewChat()" class="new-chat-button w-full flex items-center justify-center bg-gray-50 text-primary border-2 border-primary hover:bg-primary hover:text-white px-4 py-2 transition-colors rounded-[25px]">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -756,13 +756,26 @@
                 background-color: #F3F4F6;
             }
 
+            .chat-item {
+                @apply flex items-center py-3 cursor-pointer hover:bg-gray-100 relative rounded-[25px] hover:rounded-[25px];
+                padding-left: 25px;
+                padding-right: 16px;  /* px-4の代わりに明示的に指定 */
+            }
+
+            /* アクティブ状態のスタイルも同じパディングに合わせる */
             .chat-item.active {
                 background-color: rgb(20, 16, 109, 0.1);  /* primary color with opacity */
                 border-color: #14106d;
+                @apply bg-primary/10 border-primary;
+                border-radius: 25px;
+                @apply bg-primary/10 border-primary rounded-[25px];
+                padding-left: 25px;
+                padding-right: 16px;
             }
 
             .chat-item:hover {
                 background-color: rgb(20, 16, 109, 0.05);
+                border-radius: 25px;
             }
 
             /* リセットボタンの色を修正 */
@@ -770,7 +783,13 @@
             .hover:text-blue-600 { @apply hover:text-primary-dark; }
 
             .new-chat-button {
-                @apply w-full flex items-center justify-center bg-gray-50 text-primary border-2 border-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg transition-colors;
+                @apply w-full flex items-center justify-center bg-gray-50 text-primary border-2 border-primary hover:bg-primary hover:text-white px-4 py-2 transition-colors rounded-[25px];
+            }
+
+            .chat-menu-button {
+                @apply text-gray-500 hover:text-gray-700 p-1 rounded;
+                font-size: 11px;
+                letter-spacing: 2px;
             }
         </style>
     </body>
