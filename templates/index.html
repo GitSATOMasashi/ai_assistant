@@ -508,6 +508,12 @@
             }
 
             async function sendMessage() {
+                // 先頭でトークン制限をチェック
+                if (!canSendMessage()) {
+                    alert('トークン制限に達しました');
+                    return;
+                }
+
                 // ボット選択チェックは維持
                 if (!currentBot) {
                     showBotSelector();
