@@ -181,10 +181,28 @@
             </button>
         </div>
 
+        <!-- モーダルを追加（bodyの最後） -->
+        <div id="tokenLimitModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-md mx-4 relative">
+                <div class="absolute top-4 right-4">
+                    <button onclick="closeTokenLimitModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="tokenLimitModalContent" class="whitespace-pre-line text-gray-700"></div>
+            </div>
+        </div>
+
         <script>
             function canSendMessage() {
                 const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
-                return remainingTokens > 0;
+                if (remainingTokens <= 0) {
+                    showTokenLimitModal(getTokenLimitMessage());
+                    return false;
+                }
+                return true;
             }
             
             // チャットの状態管理
@@ -510,7 +528,7 @@
             async function sendMessage() {
                 // 先頭でトークン制限をチェック
                 if (!canSendMessage()) {
-                    alert(getTokenLimitMessage());
+                    showTokenLimitModal(getTokenLimitMessage());
                     return;
                 }
 
@@ -546,10 +564,10 @@
 
                     // トークン制限チェック
                     if (tokenData.remaining_tokens <= 0) {  // 残りトークンが0以下の場合
-                        alert(getTokenLimitMessage());
+                        showTokenLimitModal(getTokenLimitMessage());
                         return;
                     } else if (tokenData.tokens > tokenData.remaining_tokens) {  // 必要なトークン数が残りトークン数を超える場合
-                        alert(getTokenLimitMessage());
+                        showTokenLimitModal(getTokenLimitMessage());
                         return;
                     }
 
@@ -611,7 +629,7 @@
                     // レスポンス後のトークン制限チェック
                     const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
                     if (remainingTokens <= 0) {
-                        alert(getTokenLimitMessage());
+                        showTokenLimitModal(getTokenLimitMessage());
                         return;
                     }
 
@@ -665,7 +683,7 @@
                         // Shift + Enter が押された場合は送信
                         e.preventDefault();
                         if (!canSendMessage()) {
-                            alert(getTokenLimitMessage());
+                            showTokenLimitModal(getTokenLimitMessage());
                             return;
                         }
                         sendMessage();
@@ -802,6 +820,22 @@ ${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}�
 
 ご不便をおかけし申し訳ございません。
 引き続きのご利用をお待ちしております。`;
+            }
+
+            // モーダル表示関数
+            function showTokenLimitModal(message) {
+                const modal = document.getElementById('tokenLimitModal');
+                const content = document.getElementById('tokenLimitModalContent');
+                content.textContent = message;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            // モーダルを閉じる関数
+            function closeTokenLimitModal() {
+                const modal = document.getElementById('tokenLimitModal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
             }
         </script>
 
