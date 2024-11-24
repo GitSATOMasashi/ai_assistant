@@ -34,7 +34,8 @@ DIFY_API_URL = "https://api.dify.ai/v1/chat-messages"
 DIFY_KEYS = {
     'bot1': os.getenv('DIFY_BOT1_KEY'),
     'bot2': os.getenv('DIFY_BOT2_KEY'),
-    'bot3': os.getenv('DIFY_BOT3_KEY')
+    'bot3': os.getenv('DIFY_BOT3_KEY'),
+    'bot4': os.getenv('DIFY_BOT4_KEY')
 }
 
 # トークン管理クラス

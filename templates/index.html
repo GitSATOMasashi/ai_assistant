@@ -73,7 +73,7 @@
         <div id="botSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
             <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold">AIアシスタントを選択</h2>
+                    <h2 class="text-xl font-bold">チャットモードを選択</h2>
                     <button onclick="closeBotSelector()" class="text-gray-500 hover:text-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -81,17 +81,21 @@
                     </button>
                 </div>
                 <div class="space-y-3">
-                    <button onclick="selectBot('bot1', 'プロンプトを作る')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
-                        <h3 class="font-medium">プロンプトを作る</h3>
-                        <p class="text-sm text-gray-500">AIがヒアリングをしながら一緒にプロンプト作成を行います。</p>
+                    <button onclick="selectBot('bot1', '目次作成モード')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                        <h3 class="font-medium">目次作成モード</h3>
+                        <p class="text-sm text-gray-500">講座全体の目次を作成します。</p>
                     </button>
-                    <button onclick="selectBot('bot2', '準備中1')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
-                        <h3 class="font-medium">準備中1</h3>
-                        <p class="text-sm text-gray-500">あるアニメのキャラクターが応答します。</p>
+                    <button onclick="selectBot('bot2', '講義作成モード')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                        <h3 class="font-medium">講義作成モード</h3>
+                        <p class="text-sm text-gray-500">講義ページの内容を作成します。</p>
                     </button>
-                    <button onclick="selectBot('bot3', '準備中2')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
-                        <h3 class="font-medium">準備中2</h3>
-                        <p class="text-sm text-gray-500">あるアニメのキャラクターが応答します。</p>
+                    <button onclick="selectBot('bot3', 'スライド作成モード')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                        <h3 class="font-medium">スライド作成モード</h3>
+                        <p class="text-sm text-gray-500">講義スライドを作成します。</p>
+                    </button>
+                    <button onclick="selectBot('bot4', 'スライド埋め込みコード作成')" class="w-full p-4 text-left border rounded-lg hover:bg-gray-50">
+                        <h3 class="font-medium">スライド埋め込みコード作成</h3>
+                        <p class="text-sm text-gray-500">講義ページにスライドを埋め込むためのコードを作成します。</p>
                     </button>
                 </div>
             </div>
@@ -232,7 +236,7 @@
             function createNewChat() {
                 const newChat = {
                     id: Date.now().toString(),
-                    title: '※サポート未選択です',
+                    title: '※チャットモード未選択',
                     messages: [],
                     pinned: false,
                     bot: null,
@@ -252,23 +256,20 @@
             // ボットごとの初期メッセージを定義
             const BOT_INITIAL_MESSAGES = {
                 bot1: {
-                    title: 'プロンプトを作る',
-                    message: `プロンプト作成のお手伝いをさせていただきます。
-                    以下の項目について、順番にお聞かせください：
-                    
-                    1. プロンプトの目的（何を作りたいのか）
-                    2. 想定する入力（どんな情報を与えるのか）
-                    3. 期待する出力（どんな結果が欲しいのか）
-                    
-                    まずは、プロンプトの目的についてお聞かせください。`
+                    title: '目次作成モード',
+                    message: '「開始」と入力してください。'
                 },
                 bot2: {
-                    title: '準備中1',
-                    message: '申し訳ありません。このモードは現在開発中です。\n他のモードをお試しください。'
+                    title: '講義作成モード',
+                    message: '「開始」と入力してください。'
                 },
                 bot3: {
-                    title: '準備中2',
-                    message: '申し訳ありません。このモードは現在開発中です。\n他のモードをお試しください。'
+                    title: 'スライド作成モード',
+                    message: '「開始」と入力してください。'
+                },
+                bot4: {
+                    title: 'スライド埋め込みコード作成',
+                    message: '「開始」と入力してください。'
                 }
             };
 
