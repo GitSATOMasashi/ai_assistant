@@ -35,7 +35,7 @@
             <div class="flex-1 flex flex-col">
                 <div class="p-4 border-b">
                     <div class="text-sm text-gray-500 text-right">
-                        残りトークン: <span id="remainingTokens">5000</span>
+                        残りトークン: <span id="remainingTokens">30000</span>
                         <button onclick="resetTokens()" class="ml-2 text-blue-500 hover:text-blue-600 dev-only">リセット</button>
                     </div>
                 </div>
@@ -131,7 +131,7 @@
 
             // トークン管理のクラスを修正
             class TokenManager {
-                constructor(dailyLimit = 5000) {
+                constructor(dailyLimit = 30000) {
                     this.dailyLimit = dailyLimit;
                     this.loadFromStorage();
                 }
@@ -216,7 +216,7 @@
             }
 
             // トークンマネージャーのインスタンスを作成
-            const tokenManager = new TokenManager(5000);
+            const tokenManager = new TokenManager(30000);
 
             // LocalStorageからチャット履歴を読み込む
             function loadChats() {
