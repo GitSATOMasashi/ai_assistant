@@ -513,6 +513,7 @@
                     
                     // トークン計算方法をログ表示
                     console.log(
+                        `残りトークン: ${document.getElementById('remainingTokens').textContent}トークン | ` +
                         `トークン計算: ${tokenData.tokens}トークン ` +
                         `(計算方法: ${tokenData.method === 'tiktoken' ? 'tiktoken (Claude)' : 'フォールバック'})` +
                         `${tokenData.success ? '✅' : '⚠️'}`
@@ -573,6 +574,7 @@
                     
                     // 応答のトークン数をログ表示
                     console.log(
+                        `残りトークン: ${document.getElementById('remainingTokens').textContent}トークン | ` +
                         `応答トークン: ${outputTokenData.tokens}トークン ` +
                         `(計算方法: ${outputTokenData.method === 'tiktoken' ? 'tiktoken (Claude)' : 'フォールバック'})` +
                         `${outputTokenData.success ? '✅' : '⚠️'}`
