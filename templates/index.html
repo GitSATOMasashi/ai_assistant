@@ -444,7 +444,22 @@
                     messageDiv.className = `flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} py-2`;
                     
                     let content = message.content;
-                    content = content.replace(/\n/g, '<br>');
+                    
+                    // 特定のHTMLタグ（<article class="lecture">）が含まれているかチェック
+                    const isStructuredHtml = content.includes('<article class="lecture">');
+                    
+                    if (isStructuredHtml) {
+                        // HTMLタグをエスケープして表示
+                        content = content
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;');
+                    } else {
+                        // プレーンテキストの場合は改行のみ変換
+                        content = content.replace(/\n/g, '<br>');
+                    }
                     
                     const messageClass = message.role === 'user' 
                         ? 'bg-primary text-white' 
