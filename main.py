@@ -156,7 +156,7 @@ async def chat(bot_id: str, request: dict):
         print("Starting new conversation")
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
                 "https://api.dify.ai/v1/chat-messages",
                 headers=headers,
