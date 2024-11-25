@@ -256,6 +256,25 @@ body {
     border-bottom: 0px !important;
 }
 
+div.flex-1.overflow-y-auto.p-4{
+    padding-left: 80px;
+    padding-right: 80px;
+}
+
+div.border-t.p-4.flex.items-start{
+    padding-left: 80px;
+    padding-right: 80px;
+}
+
+#messageInput{
+    margin-right: 10px;
+}
+
+div.w-72.border-r.bg-gray-50.overflow-y-auto{
+    width: 300px;
+    min-width: 250px;
+}
+
 /* 本番環境では非表示 */
 .dev-only {
     display: none;
