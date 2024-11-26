@@ -341,16 +341,15 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     background-color: #fFFFFF;
     border: 1px solid #cecece;
     border-radius: 6px;
-    padding: 1rem;
     margin: 0.75rem 0;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.875rem;
     line-height: 1.5;
     color: #1a1a1a;
-    overflow-x: auto;
     height: 300px;
-    resize: vertical;  /* 垂直方向のリサイズを許可 */
-    position: relative;  /* 子要素の位置決めの基準に */
+    resize: vertical;
+    position: relative;
+    overflow: hidden;
 }
 
 /* カスタムリサイズハンドル */
@@ -366,8 +365,46 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     transition: opacity 0.2s;
 }
 
+.code-block-header {
+    background-color: #f1f3f5;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
+
 .code-block:hover::after {
     opacity: 0.8;
+}
+
+.code-block-content {
+    padding: 1rem;
+    height: 100%;
+    padding-top: calc(2.5rem + 1px);
+    overflow: auto;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.code-block-copy {
+    background-color: transparent;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.code-block-copy:hover {
+    background-color: #e9ecef;
 }
 
 /* コードブロック内の余分な改行を制御 */
