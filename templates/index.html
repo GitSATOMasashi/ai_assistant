@@ -507,13 +507,6 @@
                     messageDiv.innerHTML = `
                         <div class="message-container relative group max-w-[70%]" onmousemove="updateCopyButtonPosition(event, this)">
                             <div class="${messageClass} rounded-lg px-4 py-2 w-full whitespace-pre-wrap break-words">${content}</div>
-                            <button class="dev-only copy-button hidden group-hover:block items-center" onclick="copyMessage(this, event)">
-                                <svg class="copy-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-                                </svg>
-                                <span class="copy-button-text">コピー</span>
-                            </button>
                         </div>
                     `;
                     
@@ -820,25 +813,25 @@
                 currentConversationId = null;
             }
 
-            // コピー機能（HTMLの</body>タグの前に追加）
-            function copyMessage(button, event) {
-                event.stopPropagation();
-                const messageContainer = button.previousElementSibling;
-                const messageText = messageContainer.innerText;
+            // // コピー機能（HTMLの</body>タグの前に追加）
+            // function copyMessage(button, event) {
+            //     event.stopPropagation();
+            //     const messageContainer = button.previousElementSibling;
+            //     const messageText = messageContainer.innerText;
                 
-                navigator.clipboard.writeText(messageText).then(() => {
-                    const originalText = button.innerHTML;
-                    button.innerHTML = `
-                        <svg class="copy-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        <span class="copy-button-text">完了</span>
-                    `;
-                    setTimeout(() => {
-                        button.innerHTML = originalText;
-                    }, 2000);
-                });
-            }
+            //     navigator.clipboard.writeText(messageText).then(() => {
+            //         const originalText = button.innerHTML;
+            //         button.innerHTML = `
+            //             <svg class="copy-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            //                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            //             </svg>
+            //             <span class="copy-button-text">完了</span>
+            //         `;
+            //         setTimeout(() => {
+            //             button.innerHTML = originalText;
+            //         }, 2000);
+            //     });
+            // }
 
             // トークン数に基づいて送信ボタンの状態を更新する関数
             function updateSendButtonState() {
@@ -925,24 +918,24 @@ ${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}�
                 modal.classList.remove('flex');
             }
 
-            // カーソル位置に応じてコピーボタンの位置を更新する関数を追加
-            function updateCopyButtonPosition(event, container) {
-                const copyButton = container.querySelector('.copy-button');
-                if (!copyButton) return;
+            // // カーソル位置に応じてコピーボタンの位置を更新する関数を追加
+            // function updateCopyButtonPosition(event, container) {
+            //     const copyButton = container.querySelector('.copy-button');
+            //     if (!copyButton) return;
 
-                const rect = container.getBoundingClientRect();
-                const messageWidth = rect.width;
-                const buttonWidth = 90;  // コピーボタンの幅
-                const buttonHeight = 40; // コピーボタンの高さ
-                const margin = -40;       // 右端からの余白
+            //     const rect = container.getBoundingClientRect();
+            //     const messageWidth = rect.width;
+            //     const buttonWidth = 90;  // コピーボタンの幅
+            //     const buttonHeight = 40; // コピーボタンの高さ
+            //     const margin = -40;       // 右端からの余白
 
-                // メッセージの右端から一定距離の位置に固定
-                copyButton.style.left = `${messageWidth - buttonWidth/2 - margin}px`;
+            //     // メッセージの右端から一定距離の位置に固定
+            //     copyButton.style.left = `${messageWidth - buttonWidth/2 - margin}px`;
                 
-                // カーソル位置からボタンの高さの半分を引いて中心を合わせる
-                const y = event.clientY - rect.top - (buttonHeight/2);
-                copyButton.style.top = `${y}px`;
-            }
+            //     // カーソル位置からボタンの高さの半分を引いて中心を合わせる
+            //     const y = event.clientY - rect.top - (buttonHeight/2);
+            //     copyButton.style.top = `${y}px`;
+            // }
 
             // エラーモーダルを制御する関数を追加
             function showErrorModal(message) {

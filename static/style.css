@@ -275,7 +275,7 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     min-width: 250px;
 }
 
-.copy-button {
+/* .copy-button {
     position: absolute;
     display: inline-flex;
     align-items: center;
@@ -307,10 +307,10 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     flex-shrink: 0;
     margin-top: -2px;
     display: block;
-}
+} */
 
 /* コピーボタンのクリック領域のために追加 */
-.copy-button-text {
+/* .copy-button-text {
     display: inline-block;
     line-height: 1;
     pointer-events: auto;
@@ -323,13 +323,13 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
 
 .copy-button:hover {
     background-color: #F3F4F6;
-}
+} */
 
 /* 追加: クリック時のスタイル */
-.copy-button:active {
+/*.copy-button:active {
     background-color: #E5E7EB;
-    transform: translateX(-50%) scale(0.98);  /* 少し縮小してクリック感を出す */
-}
+    transform: translateX(-50%) scale(0.98); 
+} */
 
 /* 追加: ホバー時の表示制御 */
 .message-container:hover .copy-button {
