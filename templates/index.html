@@ -195,6 +195,39 @@
             </div>
         </div>
 
+        <!-- エラーモーダル -->
+        <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-red-600">500エラー</h2>
+                    <button onclick="closeErrorModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <p id="errorMessage" class="text-gray-600"></p>
+                    <div class="text-sm text-gray-500">
+                        <p class="font-medium mb-2">考えられる原因:</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>応答生成のタイムアウト</li>
+                            <li>サーバーの一時的な問題</li>
+                            <li>トークン制限の超過</li>
+                        </ul>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <p class="font-medium mb-2">対処方法:</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>しばらく待ってから再度お試しください</li>
+                            <li>メッセージを短く分けて送信してみてください</li>
+                            <li>ブラウザをリロードしてください</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
             function canSendMessage() {
                 const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
@@ -625,7 +658,7 @@
                         let errorMessage = 'エラーが発生しました。';
                         if (apiResponse.status === 500) {
                             errorMessage = `
-【APIエラー】
+【500エラー】
 申し訳ありません。サーバーでエラーが発生しました。
 
 考えられる原因:
@@ -694,6 +727,11 @@
                 } catch (error) {
                     console.error('Error:', error);
                     loadingMessage.classList.add('hidden');
+                    
+                    // 500エラーの場合、モーダルを表示
+                    if (error.message.includes('【500エラー】')) {
+                        showErrorModal('申し訳ありません。サーバーでエラーが発生しました。');
+                    }
                     
                     chat.messages.push({
                         role: 'error',
@@ -900,6 +938,32 @@ ${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}�
                 // カーソル位置からボタンの高さの半分を引いて中心を合わせる
                 const y = event.clientY - rect.top - (buttonHeight/2);
                 copyButton.style.top = `${y}px`;
+            }
+
+            // エラーモーダルを制御する関数を追加
+            function showErrorModal(message) {
+                const modal = document.getElementById('errorModal');
+                const messageElement = document.getElementById('errorMessage');
+                if (modal && messageElement) {
+                    messageElement.textContent = message;
+                    modal.classList.remove('hidden');
+                } else {
+                    console.error('Error modal elements not found');
+                }
+            }
+
+            // エラーモーダルを閉じる関数を追加
+            function closeErrorModal() {
+                const modal = document.getElementById('errorModal');
+                modal.classList.add('hidden');
+            }
+
+            // エラー発生時の処理
+            function handleError(error) {
+                console.error('Error:', error);
+                showErrorModal('申し訳ありません。サーバーでエラーが発生しました。');
+                // 既存のエラー処理も維持
+                appendErrorMessage('エラーが発生しました。しばらく待ってから再度お試しください。');
             }
         </script>
 

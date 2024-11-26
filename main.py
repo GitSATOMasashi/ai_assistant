@@ -32,11 +32,16 @@ app.add_middleware(
 # Difyの設定
 DIFY_API_URL = "https://api.dify.ai/v1/chat-messages"
 DIFY_KEYS = {
-    'bot1': os.getenv('DIFY_BOT1_KEY'),
-    'bot2': os.getenv('DIFY_BOT2_KEY'),
-    'bot3': os.getenv('DIFY_BOT3_KEY'),
-    'bot4': os.getenv('DIFY_BOT4_KEY')
+    'bot1': os.getenv('DIFY_BOT1_KEY', '').split('#')[0].strip(),
+    'bot2': os.getenv('DIFY_BOT2_KEY', '').split('#')[0].strip(),
+    'bot3': os.getenv('DIFY_BOT3_KEY', '').split('#')[0].strip(),
+    'bot4': os.getenv('DIFY_BOT4_KEY', '').split('#')[0].strip()
 }
+
+# デバッグ用に値を確認
+print("DIFY_KEYS values:")
+for key, value in DIFY_KEYS.items():
+    print(f"{key}: {value}")
 
 # トークン管理クラス
 class TokenManager:
@@ -177,9 +182,22 @@ async def chat(bot_id: str, request: dict):
                 
             return response_data
             
+    except UnicodeEncodeError as e:
+        print(f"UnicodeEncodeError details: {str(e)}")
+        print(f"Error position: {e.start} to {e.end}")
+        print(f"Object causing error: {e.object[e.start:e.end]}")
+        print(f"Full object: {e.object}")
+        raise HTTPException(
+            status_code=500,
+            detail={"error": str(e), "message": "文字エンコーディングエラーが発生しました"}
+        )
     except Exception as e:
-        print(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Unexpected error: {type(e).__name__}")
+        print(f"Error details: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 if __name__ == "__main__":
     import uvicorn
