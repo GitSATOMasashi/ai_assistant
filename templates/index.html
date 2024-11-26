@@ -507,7 +507,7 @@
                     messageDiv.innerHTML = `
                         <div class="message-container relative group max-w-[70%]" onmousemove="updateCopyButtonPosition(event, this)">
                             <div class="${messageClass} rounded-lg px-4 py-2 w-full whitespace-pre-wrap break-words">${content}</div>
-                            <button class="copy-button hidden group-hover:block items-center" onclick="copyMessage(this, event)">
+                            <button class="dev-only copy-button hidden group-hover:block items-center" onclick="copyMessage(this, event)">
                                 <svg class="copy-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                         d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
