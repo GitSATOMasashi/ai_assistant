@@ -490,6 +490,10 @@
                             .replace(/"/g, '&quot;')
                             .replace(/'/g, '&#039;');
                     } else {
+                        // コードブロックを検出して装飾（新規追加）
+                        content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
+                            return `<div class="code-block">${code}</div>`;
+                        });
                         // プレーンテキストの場合は改行のみ変換
                         content = content.replace(/\n/g, '<br>');
                     }
@@ -964,6 +968,24 @@ ${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}�
                 showErrorModal('申し訳ありません。サーバーでエラーが発生しました。');
                 // 既存のエラー処理も維持
                 appendErrorMessage('エラーが発生しました。しばらく待ってから再度お試しください。');
+            }
+
+            function appendMessage(role, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${role}`;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.innerHTML = content;
+                
+                // コードブロックのスタイリング
+                if (content.includes('```')) {
+                    contentDiv.classList.add('code-block');
+                }
+                
+                messageDiv.appendChild(contentDiv);
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         </script>
 

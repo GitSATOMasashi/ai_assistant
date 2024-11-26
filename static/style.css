@@ -340,3 +340,28 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
 .message-container:hover .copy-button {
     opacity: 1;
 }
+
+/* コードブロック用のスタイル */
+.code-block {
+    background-color: #fFFFFF;
+    border: 1px solid #cecece;
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 0.75rem 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #1a1a1a;
+    overflow-x: auto;
+}
+
+/* コードブロック内の余分な改行を制御 */
+.code-block br:first-child,
+.code-block br:last-child {
+    display: none;
+}
+
+/* 連続するbrの制御 */
+.message-content br + br {
+    display: none;
+}
