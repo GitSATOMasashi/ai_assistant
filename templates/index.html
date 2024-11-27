@@ -481,23 +481,58 @@
                     
                     let content = message.content;
                     
-                    // 特定のHTMLタグ（<article class="lecture">）が含まれているかチェック
-                    const isStructuredHtml = content.includes('<article class="lecture">');
-                    
-                    if (isStructuredHtml) {
-                        // HTMLタグをエスケープして表示
-                        content = content
-                            .replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/"/g, '&quot;')
-                            .replace(/'/g, '&#039;');
-                    } else {
-                        // コードブロックを検出して装飾
+                    // パターンの判定
+                    const hasStructuredHtml = content.includes('<article class="lecture">');
+                    const hasCodeBlock = content.includes('```');
+
+                    if (hasStructuredHtml && hasCodeBlock) {
+                        // パターン1: HTMLタグとコードブロックの両方を含む
                         content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
-                            return `<div class="code-block"><div class="code-block-header"><span>コードブロック</span><button class="code-block-copy" onclick="copyCodeBlock(event, this)">コピー</button></div><div class="code-block-content">${code}</div></div>`;
+                            // コードブロック内のHTMLタグをエスケープ（<br>は除外）
+                            const escapedCode = code
+                                .replace(/&/g, '&amp;')
+                                .replace(/<br>/g, '!!BR!!')  // 一時的に<br>を置換
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/"/g, '&quot;')
+                                .replace(/'/g, '&#039;')
+                                .replace(/!!BR!!/g, '<br>');  // <br>を元に戻す
+
+                            return `
+                                <div class="code-block">
+                                    <div class="code-block-header">
+                                        <span>コードブロック</span>
+                                        <button class="code-block-copy" onclick="copyCodeBlock(event, this)">コピー</button>
+                                    </div>
+                                    <div class="code-block-content">${escapedCode}</div>
+                                </div>
+                            `;
                         });
-                        // プレーンテキストの場合は改行のみ変換
+
+                        // コードブロック外のテキストのみ改行を処理
+                        content = content.replace(/^([^`]+)|(?:```[\s\S]*?```)([^`]+)/g, (match) => {
+                            return match.replace(/\n/g, '<br>');
+                        });
+                    } else if (hasCodeBlock) {
+                        // パターン2: コードブロックのみ
+                        content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
+                            return `
+                                <div class="code-block">
+                                    <div class="code-block-header">
+                                        <span>コードブロック</span>
+                                        <button class="code-block-copy" onclick="copyCodeBlock(event, this)">コピー</button>
+                                    </div>
+                                    <div class="code-block-content">${code}</div>
+                                </div>
+                            `;
+                        });
+
+                        // コードブロック外のテキストのみ改行を処理
+                        content = content.replace(/^([^`]+)|(?:```[\s\S]*?```)([^`]+)/g, (match) => {
+                            return match.replace(/\n/g, '<br>');
+                        });
+                    } else {
+                        // パターン3: プレーンテキストのみ
                         content = content.replace(/\n/g, '<br>');
                     }
                     
