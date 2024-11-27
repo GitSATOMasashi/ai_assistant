@@ -341,7 +341,6 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     background-color: #fFFFFF;
     border: 1px solid #cecece;
     border-radius: 6px;
-    margin: 0.75rem 0;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.875rem;
     line-height: 1.5;
@@ -377,6 +376,7 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     left: 0;
     right: 0;
     z-index: 1;
+    height: 40px;
 }
 
 .code-block:hover::after {
@@ -384,12 +384,11 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
 }
 
 .code-block-content {
-    padding: 1rem;
-    height: 100%;
-    padding-top: calc(2.5rem + 10px);
+    padding: 10px 10px 10px 10px;
+    margin-top: 40px;
     overflow: auto;
-    min-height: 100%;
     box-sizing: border-box;
+    height: 260px;
 }
 
 .code-block-copy {
