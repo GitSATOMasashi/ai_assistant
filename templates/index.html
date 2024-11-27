@@ -487,6 +487,7 @@
 
                     if (hasStructuredHtml && hasCodeBlock) {
                         // パターン1: HTMLタグとコードブロックの両方を含む
+                        // まずコードブロックを処理
                         content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
                             // コードブロック内のHTMLタグをエスケープ（<br>は除外）
                             const escapedCode = code
@@ -509,10 +510,11 @@
                             `;
                         });
 
-                        // コードブロック外のテキストのみ改行を処理
-                        content = content.replace(/^([^`]+)|(?:```[\s\S]*?```)([^`]+)/g, (match) => {
-                            return match.replace(/\n/g, '<br>');
-                        });
+                        // 連続する改行を単一の<br>に変換
+                        content = content
+                            .replace(/\n+/g, '\n')  // 連続する改行を1つに
+                            .replace(/\n/g, '<br>');  // 単一の改行を<br>に
+
                     } else if (hasCodeBlock) {
                         // パターン2: コードブロックのみ
                         content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
@@ -527,15 +529,21 @@
                             `;
                         });
 
-                        // コードブロック外のテキストのみ改行を処理
-                        content = content.replace(/^([^`]+)|(?:```[\s\S]*?```)([^`]+)/g, (match) => {
-                            return match.replace(/\n/g, '<br>');
-                        });
+                        // 連続する改行を単一の<br>に変換
+                        content = content
+                            .replace(/\n+/g, '\n')  // 連続する改行を1つに
+                            .replace(/\n/g, '<br>');  // 単一の改行を<br>に
+
                     } else {
                         // パターン3: プレーンテキストのみ
-                        content = content.replace(/\n/g, '<br>');
+                        content = content
+                            .replace(/\n+/g, '\n')  // 連続する改行を1つに
+                            .replace(/\n/g, '<br>');  // 単一の改行を<br>に
                     }
                     
+                    // 連続する<br>を1つに置換
+                    content = content.replace(/(?:<br>[\s\r\n]*){2,}/g, '<br>');
+
                     const messageClass = message.role === 'user' 
                         ? 'bg-primary text-white' 
                         : message.role === 'error' 
@@ -1028,7 +1036,7 @@ ${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}�
                 
                 navigator.clipboard.writeText(code).then(() => {
                     const originalText = button.innerText;
-                    button.innerText = 'コピー完了';
+                    button.innerText = '完了';
                     button.disabled = true;
                     
                     setTimeout(() => {

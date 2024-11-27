@@ -349,6 +349,7 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     resize: vertical;
     position: relative;
     overflow: hidden;
+    margin-top: 10px;
 }
 
 /* カスタムリサイズハンドル */
@@ -377,6 +378,14 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     right: 0;
     z-index: 1;
     height: 40px;
+}
+
+.code-block-header span{
+    min-width: 200px;
+}
+
+.code-block-header .code-block-copy{
+    min-width: 70px;
 }
 
 .code-block:hover::after {
