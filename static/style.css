@@ -429,7 +429,11 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     z-index: 2;
 }
 
-/* 本番環境では非表示 */
+.chat-title{
+    font-size: 14px;
+}
+
+/* 本番環境では非表示 
 .dev-only {
     display: none !important;
-}
+}*/

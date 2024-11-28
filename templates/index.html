@@ -382,7 +382,7 @@
                 },
                 bot3: {
                     title: 'スライド作成モード',
-                    message: '「開始」と入力してください。'
+                    message: '講義のHTMLコードを入力してください。'
                 },
                 bot4: {
                     title: 'スライド埋め込みコード作成',
@@ -481,8 +481,8 @@
                         .replace(/"/g, '&quot;')
                         .replace(/'/g, '&#039;');
 
-                    // コードブロックを装飾（改行を制御）
-                    content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
+                    // コードブロックを装飾（言語識別子を削除）
+                    content = content.replace(/```[\w]*\n([\s\S]*?)```/g, (match, code) => {
                         return `<div class="code-block"><div class="code-block-header"><span>コードブロック</span><button class="code-block-copy" onclick="copyCodeBlock(event, this)">コピー</button></div><div class="code-block-content">${code}</div></div>`;
                     });
 
