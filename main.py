@@ -170,12 +170,6 @@ async def chat(bot_id: str, request: dict):
             response.raise_for_status()
             response_data = response.json()
             
-            # レスポンスの整形
-            if 'answer' in response_data:
-                # HTMLの改行タグに変換
-                answer = response_data['answer'].replace('\n', '<br>')
-                response_data['answer'] = answer
-            
             # 会話IDをログに出力（デバッグ用）
             if 'conversation_id' in response_data:
                 print(f"Response conversation_id: {response_data['conversation_id']}")

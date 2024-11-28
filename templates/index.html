@@ -463,16 +463,8 @@
                 messagesDiv.innerHTML = '';
                 
                 messages.forEach(message => {
-                    if (!message) {
-                        console.warn('Message object is null or undefined');
-                        return;
-                    }
-                    if (!message.role) {
-                        console.warn('Message role is missing:', message);
-                        return;
-                    }
-                    if (!message.content) {
-                        console.warn(`Content is missing for ${message.role} message`);
+                    if (!message?.role || !message?.content) {
+                        console.warn('Invalid message:', message);
                         return;
                     }
 
@@ -481,68 +473,18 @@
                     
                     let content = message.content;
                     
-                    // パターンの判定
-                    const hasStructuredHtml = content.includes('<article class="lecture">');
-                    const hasCodeBlock = content.includes('```');
+                    // まず全体をHTMLエスケープ
+                    content = content
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
 
-                    if (hasStructuredHtml && hasCodeBlock) {
-                        // パターン1: HTMLタグとコードブロックの両方を含む
-                        // まずコードブロックを処理
-                        content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
-                            // コードブロック内のHTMLタグをエスケープ（<br>は除外）
-                            const escapedCode = code
-                                .replace(/&/g, '&amp;')
-                                .replace(/<br>/g, '!!BR!!')  // 一時的に<br>を置換
-                                .replace(/</g, '&lt;')
-                                .replace(/>/g, '&gt;')
-                                .replace(/"/g, '&quot;')
-                                .replace(/'/g, '&#039;')
-                                .replace(/!!BR!!/g, '<br>');  // <br>を元に戻す
-
-                            return `
-                                <div class="code-block">
-                                    <div class="code-block-header">
-                                        <span>コードブロック</span>
-                                        <button class="code-block-copy" onclick="copyCodeBlock(event, this)">コピー</button>
-                                    </div>
-                                    <div class="code-block-content">${escapedCode}</div>
-                                </div>
-                            `;
-                        });
-
-                        // 連続する改行を単一の<br>に変換
-                        content = content
-                            .replace(/\n+/g, '\n')  // 連続する改行を1つに
-                            .replace(/\n/g, '<br>');  // 単一の改行を<br>に
-
-                    } else if (hasCodeBlock) {
-                        // パターン2: コードブロックのみ
-                        content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
-                            return `
-                                <div class="code-block">
-                                    <div class="code-block-header">
-                                        <span>コードブロック</span>
-                                        <button class="code-block-copy" onclick="copyCodeBlock(event, this)">コピー</button>
-                                    </div>
-                                    <div class="code-block-content">${code}</div>
-                                </div>
-                            `;
-                        });
-
-                        // 連続する改行を単一の<br>に変換
-                        content = content
-                            .replace(/\n+/g, '\n')  // 連続する改行を1つに
-                            .replace(/\n/g, '<br>');  // 単一の改行を<br>に
-
-                    } else {
-                        // パターン3: プレーンテキストのみ
-                        content = content
-                            .replace(/\n+/g, '\n')  // 連続する改行を1つに
-                            .replace(/\n/g, '<br>');  // 単一の改行を<br>に
-                    }
-                    
-                    // 連続する<br>を1つに置換
-                    content = content.replace(/(?:<br>[\s\r\n]*){2,}/g, '<br>');
+                    // コードブロックを装飾（改行を制御）
+                    content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
+                        return `<div class="code-block"><div class="code-block-header"><span>コードブロック</span><button class="code-block-copy" onclick="copyCodeBlock(event, this)">コピー</button></div><div class="code-block-content">${code}</div></div>`;
+                    });
 
                     const messageClass = message.role === 'user' 
                         ? 'bg-primary text-white' 
@@ -550,11 +492,7 @@
                             ? 'bg-red-100 text-red-600'
                             : 'bg-gray-100';
 
-                    messageDiv.innerHTML = `
-                        <div class="message-container relative group max-w-[70%]">
-                            <div class="${messageClass} rounded-lg px-4 py-2 w-full whitespace-pre-wrap break-words">${content}</div>
-                        </div>
-                    `;
+                    messageDiv.innerHTML = `<div class="message-container relative group max-w-[70%]"><div class="${messageClass} rounded-lg px-4 py-2 w-full whitespace-pre-wrap break-words">${content}</div></div>`;
                     
                     messagesDiv.appendChild(messageDiv);
                 });
