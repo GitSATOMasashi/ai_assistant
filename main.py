@@ -39,9 +39,22 @@ DIFY_KEYS = { # DifyのAPIキー
 }
 
 # デバッグ用に値を確認
-print("DIFY_KEYS values:") # デバッグ用のメッセージを出力
-for key, value in DIFY_KEYS.items(): # DIFY_KEYSの各キーと値を出力
-    print(f"{key}: {value}") # キーと値を出力
+# print("DIFY_KEYS values:") # デバッグ用のメッセージを出力
+# for key, value in DIFY_KEYS.items(): # DIFY_KEYSの各キーと値を出力
+#     print(f"{key}: {value}") # キーと値を出力
+
+def log_token_status(action: str, user_id: str, message_tokens: int = 0):
+    used_tokens = token_manager.user_tokens.get(user_id, {"count": 0})["count"]
+    remaining_tokens = token_manager.daily_limit - used_tokens
+    
+    print(f"""
+=== トークン使用状況（{action}）===
+ベーストークン数: 30,000
+{f'本メッセージで消費したトークン数: {message_tokens}' if message_tokens else ''}
+本日使用したトークン数: {used_tokens}
+本日の残りトークン数: {remaining_tokens}
+================================
+    """)
 
 # トークン管理クラス
 class TokenManager: # トークン管理クラス
@@ -134,11 +147,14 @@ async def chat(bot_id: str, request: dict): # チャットのPOSTリクエスト
             }
         )
     
-    # トークンを消費
+    # トークンを消費（1回だけ）
     token_manager.user_tokens[user_id] = { # ユーザーの今日のトークン使用状況を更新
         "date": datetime.date.today(), # 今日の日付を更新
         "count": current_tokens + token_info["tokens"] # トークン数を更新
     }
+    
+    # メッセージ送信後のログ（1回だけ）
+    log_token_status("送信後", user_id, token_info["tokens"]) # トークン使用状況をログ出力
     
     headers = {
         "Authorization": f"Bearer {DIFY_KEYS[bot_id]}",
@@ -169,6 +185,15 @@ async def chat(bot_id: str, request: dict): # チャットのPOSTリクエスト
             )
             response.raise_for_status() # レスポンスをチェック
             response_data = response.json() # レスポンスをJSON形式に変換
+            
+            # AIの応答に対するトークン数を計算
+            ai_response_tokens = token_manager.count_tokens(response_data['answer'])
+            
+            # AIの応答のトークンも消費
+            token_manager.user_tokens[user_id]["count"] += ai_response_tokens["tokens"]
+            
+            # 最終的なトークン使用状況をログ出力
+            log_token_status("AI応答後", user_id, ai_response_tokens["tokens"])
             
             # 会話IDをログに出力（デバッグ用）
             if 'conversation_id' in response_data: # 会話IDがある場合

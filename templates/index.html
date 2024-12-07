@@ -288,7 +288,8 @@
                 }
 
                 useTokens(count) { // 使用済みトークンを更新
-                    this.usedTokens += count; // 使用済みトークンを更新
+                    const currentRemaining = parseInt(document.getElementById('remainingTokens').textContent); // 残りトークンを取得
+                    this.usedTokens = 30000 - currentRemaining + count; // 使用済みトークンを更新
                     this.saveToStorage(); // LocalStorageに保存
                     this.updateDisplay(); // 表示を更新
                     return this.getRemainingTokens(); // 残りトークンを返す
@@ -561,7 +562,26 @@
                 document.getElementById('botSelector').classList.add('hidden'); // ボット選択モーダルを非表示
             }
 
-            async function sendMessage() { // メッセージを送信
+            // トークン使用状況をログ出力する関数
+            function logTokenStatus(action, messageTokens = 0) {
+                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
+                const currentUsedTokens = 30000 - remainingTokens;
+                
+                // 送信後の場合は、これから消費されるトークンを含める
+                const totalUsedTokens = action === '送信後' ? messageTokens : currentUsedTokens;
+                const actualRemainingTokens = action === '送信後' ? 30000 - messageTokens : remainingTokens;
+                
+                console.log(`
+=== トークン使用状況（${action}）===
+ベーストークン数: 30,000
+本メッセージで消費したトークン数: ${messageTokens}
+本日使用したトークン数: ${totalUsedTokens}
+本日の残りトークン数: ${actualRemainingTokens}
+================================
+                `);
+            }
+
+            async function sendMessage() {
                 // 先頭でトークン制限をチェック
                 if (!canSendMessage()) { // トークン制限をチェック
                     showTokenLimitModal(getTokenLimitMessage()); // トークン制限モーダルを表示
@@ -589,14 +609,9 @@
                     });
                     
                     const tokenData = await response.json(); // トークン数を取得
-                    
-                    // トークン計算方法をログ表示
-                    console.log(
-                        `残りトークン: ${document.getElementById('remainingTokens').textContent}トークン | ` +
-                        `トークン計算: ${tokenData.tokens}トークン ` +
-                        `(計算方法: ${tokenData.method === 'tiktoken' ? 'tiktoken (Claude)' : 'フォールバック'})` +
-                        `${tokenData.success ? '✅' : '⚠️'}`
-                    );
+
+                    // トークン消費後のログ
+                    logTokenStatus('送信後', tokenData.tokens);
 
                     // トークン制限チェック
                     if (tokenData.remaining_tokens <= 0) {  // 残りトークンが0以下の場合
@@ -675,14 +690,12 @@
                     });
                     
                     const outputTokenData = await outputTokenResponse.json(); // トークン数を取得
-                    
-                    // 応答のトークン数をログ表示
-                    console.log(
-                        `残りトークン: ${document.getElementById('remainingTokens').textContent}トークン | ` +
-                        `応答トークン: ${outputTokenData.tokens}トークン ` +
-                        `(計算方法: ${outputTokenData.method === 'tiktoken' ? 'tiktoken (Claude)' : 'フォールバック'})` +
-                        `${outputTokenData.success ? '✅' : '⚠️'}`
-                    );
+
+                    // 出力トークンを消費（AI応答時）
+                    tokenManager.useTokens(outputTokenData.tokens);
+
+                    // AI応答後のログ（この位置に移動）
+                    logTokenStatus('AI応答後', outputTokenData.tokens);
 
                     // レスポンス後のトークン制限チェック
                     const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent); // 残りトークンを取得
