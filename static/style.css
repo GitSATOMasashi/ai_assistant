@@ -17,17 +17,22 @@ body {
 
 .new-chat-button {
     width: 100%;
-    background-color: #22c55e;
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: rgb(249 250 251);  /* bg-gray-50 */
+    color: #14106d;  /* text-primary */
+    border: 2px solid #14106d;  /* border-2 border-primary */
+    padding: 0.5rem 1rem;  /* px-4 py-2 */
+    border-radius: 25px;
+    transition-property: color, background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
 }
 
 .new-chat-button:hover {
-    background-color: #16a34a;
+    background-color: #14106d;  /* hover:bg-primary */
+    color: white;  /* hover:text-white */
 }
 
 .chat-history {
@@ -36,12 +41,19 @@ body {
 }
 
 .chat-item {
-    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
     cursor: pointer;
+    position: relative;
+    border-radius: 25px;
+    padding-left: 25px;
+    padding-right: 16px;
 }
 
 .chat-item:hover {
-    background-color: #f3f4f6;
+    background-color: rgb(243 244 246);
+    border-radius: 25px;
 }
 
 /* メインチャットエリア */
@@ -213,17 +225,23 @@ body {
 }
 
 .chat-item.active {
-    background-color: #e5e7eb;
+    background-color: rgba(20, 16, 109, 0.1);  /* primary color with opacity */
+    border-color: #14106d;
+    border-radius: 25px;
+    padding-left: 25px;
+    padding-right: 16px;
 }
 
 .chat-menu-button {
-    padding: 0.25rem 0.5rem;
-    color: #6b7280;
-    border-radius: 0.25rem;
+    color: rgb(107 114 128);  /* text-gray-500 */
+    padding: 0.25rem;  /* p-1 */
+    border-radius: 0.25rem;  /* rounded */
+    font-size: 11px;
+    letter-spacing: 2px;
 }
 
 .chat-menu-button:hover {
-    background-color: #f3f4f6;
+    color: rgb(55 65 81);  /* hover:text-gray-700 */
 }
 
 /* チャットメニュー */
@@ -431,6 +449,125 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
 
 .chat-title{
     font-size: 14px;
+}
+
+/* ローディング表示用のCSS */
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background-color: #9CA3AF;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+                0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* テキストエリアのスタイル */
+#messageInput {
+    max-height: 200px; /* 最大の高さを制限 */
+    transition: height 0.1s ease;
+    overflow-y: auto !important; /* スクロールを強制的に有効化 */
+}
+
+/* スクロールバーのスタイル */
+#messageInput::-webkit-scrollbar {
+    width: 8px;
+}
+
+#messageInput::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#messageInput::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+#messageInput::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* チャットアイテムのスタイル */
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    cursor: pointer;
+    position: relative;
+    border-radius: 25px;
+    padding-left: 25px;
+    padding-right: 16px;
+}
+
+.chat-item:hover {
+    background-color: rgb(243 244 246);
+    border-radius: 25px;
+}
+
+/* アクティブ状態のスタイルも同じパディングに合わせる */
+.chat-item.active {
+    background-color: rgba(20, 16, 109, 0.1);  /* primary color with opacity */
+    border-color: #14106d;
+    border-radius: 25px;
+    padding-left: 25px;
+    padding-right: 16px;
+}
+
+.chat-item:hover {
+    background-color: rgb(20, 16, 109, 0.05);
+    border-radius: 25px;
+}
+
+/* リセットボタンの色を修正 */
+.text-blue-500 { 
+    color: #14106d;  /* primary colorの値 */
+}
+.hover\:text-blue-600:hover { 
+    color: #0c0945;  /* primary-darkの値 */
+}
+
+.new-chat-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(249 250 251);  /* bg-gray-50 */
+    color: #14106d;  /* text-primary */
+    border: 2px solid #14106d;  /* border-2 border-primary */
+    padding: 0.5rem 1rem;  /* px-4 py-2 */
+    border-radius: 25px;
+    transition-property: color, background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.new-chat-button:hover {
+    background-color: #14106d;  /* hover:bg-primary */
+    color: white;  /* hover:text-white */
+}
+
+.chat-menu-button {
+    color: rgb(107 114 128);  /* text-gray-500 */
+    padding: 0.25rem;  /* p-1 */
+    border-radius: 0.25rem;  /* rounded */
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.chat-menu-button:hover {
+    color: rgb(55 65 81);  /* hover:text-gray-700 */
 }
 
 /* 本番環境では非表示 */
