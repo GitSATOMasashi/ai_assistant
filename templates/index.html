@@ -797,26 +797,6 @@
                 currentConversationId = null;
             }
 
-            // // コピー機能（HTMLの</body>タグの前に追加）
-            // function copyMessage(button, event) {
-            //     event.stopPropagation();
-            //     const messageContainer = button.previousElementSibling;
-            //     const messageText = messageContainer.innerText;
-                
-            //     navigator.clipboard.writeText(messageText).then(() => {
-            //         const originalText = button.innerHTML;
-            //         button.innerHTML = `
-            //             <svg class="copy-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            //                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            //             </svg>
-            //             <span class="copy-button-text">完了</span>
-            //         `;
-            //         setTimeout(() => {
-            //             button.innerHTML = originalText;
-            //         }, 2000);
-            //     });
-            // }
-
             // トークン数に基づいて送信ボタンの状態を更新する関数
             function updateSendButtonState() {
                 const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
@@ -902,25 +882,6 @@ ${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}�
                 modal.classList.remove('flex');
             }
 
-            // // カーソル位置に応じてコピーボタンの位置を更新する関数を追加
-            // function updateCopyButtonPosition(event, container) {
-            //     const copyButton = container.querySelector('.copy-button');
-            //     if (!copyButton) return;
-
-            //     const rect = container.getBoundingClientRect();
-            //     const messageWidth = rect.width;
-            //     const buttonWidth = 90;  // コピーボタンの幅
-            //     const buttonHeight = 40; // コピーボタンの高さ
-            //     const margin = -40;       // 右端からの余白
-
-            //     // メッセージの右端から一定距離の位置に固定
-            //     copyButton.style.left = `${messageWidth - buttonWidth/2 - margin}px`;
-                
-            //     // カーソル位置からボタンの高さの半分を引いて中心を合わせる
-            //     const y = event.clientY - rect.top - (buttonHeight/2);
-            //     copyButton.style.top = `${y}px`;
-            // }
-
             // エラーモーダルを制御する関数を追加
             function showErrorModal(message) {
                 const modal = document.getElementById('errorModal');
@@ -992,109 +953,5 @@ ${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}�
                 });
             }
         </script>
-
-        <!-- ローディング表示用のCSS -->
-        <style>
-            .typing-indicator {
-                display: flex;
-                gap: 4px;
-            }
-
-            .typing-indicator span {
-                width: 8px;
-                height: 8px;
-                background-color: #9CA3AF;
-                border-radius: 50%;
-                animation: bounce 1.4s infinite ease-in-out;
-            }
-
-            .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-            .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-
-            @keyframes bounce {
-                0%, 80%, 100% { transform: scale(0); }
-                40% { transform: scale(1); }
-            }
-
-            /* テキストエリアのスタイル */
-            #messageInput {
-                max-height: 200px; /* 最大の高さを制限 */
-                transition: height 0.1s ease;
-                overflow-y: auto !important; /* スクロールを強制的に有効化 */
-            }
-
-            /* スクロールバーのスタイル */
-            #messageInput::-webkit-scrollbar {
-                width: 8px;
-            }
-
-            #messageInput::-webkit-scrollbar-track {
-                background: #f1f1f1;
-                border-radius: 4px;
-            }
-
-            #messageInput::-webkit-scrollbar-thumb {
-                background: #888;
-                border-radius: 4px;
-            }
-
-            #messageInput::-webkit-scrollbar-thumb:hover {
-                background: #555;
-            }
-
-            /* .copy-button {
-                position: absolute;
-                background-color: rgba(255, 255, 255, 0.95);
-                border-radius: 0.375rem;
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
-                color: #4B5563;
-                border: 1px solid #E5E7EB;
-                cursor: pointer;
-                transition: all 0.2s;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-                z-index: 10;
-            }
-
-            .copy-button:hover {
-                background-color: #F3F4F6;
-            } */
-
-            .chat-item {
-                @apply flex items-center py-3 cursor-pointer hover:bg-gray-100 relative rounded-[25px] hover:rounded-[25px];
-                padding-left: 25px;
-                padding-right: 16px;  /* px-4の代わりに明示的に指定 */
-            }
-
-            /* アクティブ状態のスタイルも同じパディングに合わせる */
-            .chat-item.active {
-                background-color: rgb(20, 16, 109, 0.1);  /* primary color with opacity */
-                border-color: #14106d;
-                @apply bg-primary/10 border-primary;
-                border-radius: 25px;
-                @apply bg-primary/10 border-primary rounded-[25px];
-                padding-left: 25px;
-                padding-right: 16px;
-            }
-
-            .chat-item:hover {
-                background-color: rgb(20, 16, 109, 0.05);
-                border-radius: 25px;
-            }
-
-            /* リセットボタンの色を修正 */
-            .text-blue-500 { @apply text-primary; }
-            .hover:text-blue-600 { @apply hover:text-primary-dark; }
-
-            .new-chat-button {
-                @apply w-full flex items-center justify-center bg-gray-50 text-primary border-2 border-primary hover:bg-primary hover:text-white px-4 py-2 transition-colors rounded-[25px];
-            }
-
-            .chat-menu-button {
-                @apply text-gray-500 hover:text-gray-700 p-1 rounded;
-                font-size: 11px;
-                letter-spacing: 2px;
-            }
-        </style>
     </body>
 </html>

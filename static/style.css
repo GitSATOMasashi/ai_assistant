@@ -433,6 +433,106 @@ div.w-72.border-r.bg-gray-50.overflow-y-auto{
     font-size: 14px;
 }
 
+/* ローディング表示用のCSS */
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background-color: #9CA3AF;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* テキストエリアのスタイル */
+#messageInput {
+    max-height: 200px; /* 最大の高さを制限 */
+    transition: height 0.1s ease;
+    overflow-y: auto !important; /* スクロールを強制的に有効化 */
+}
+
+/* スクロールバーのスタイル */
+#messageInput::-webkit-scrollbar {
+    width: 8px;
+}
+
+#messageInput::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#messageInput::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+#messageInput::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* .copy-button {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: #4B5563;
+    border: 1px solid #E5E7EB;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
+
+.copy-button:hover {
+    background-color: #F3F4F6;
+} */
+
+.chat-item {
+    @apply flex items-center py-3 cursor-pointer hover:bg-gray-100 relative rounded-[25px] hover:rounded-[25px];
+    padding-left: 25px;
+    padding-right: 16px;  /* px-4の代わりに明示的に指定 */
+}
+
+/* アクティブ状態のスタイルも同じパディングに合わせる */
+.chat-item.active {
+    background-color: rgb(20, 16, 109, 0.1);  /* primary color with opacity */
+    border-color: #14106d;
+    border-radius: 25px;
+    padding-left: 25px;
+    padding-right: 16px;
+}
+
+.chat-item:hover {
+    background-color: rgb(20, 16, 109, 0.05);
+    border-radius: 25px;
+}
+
+/* リセットボタンの色を修正 */
+.text-blue-500 { @apply text-primary; }
+.hover:text-blue-600 { @apply hover:text-primary-dark; }
+
+.new-chat-button {
+    @apply w-full flex items-center justify-center bg-gray-50 text-primary border-2 border-primary hover:bg-primary hover:text-white px-4 py-2 transition-colors rounded-[25px];
+}
+
+.chat-menu-button {
+    @apply text-gray-500 hover:text-gray-700 p-1 rounded;
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
 /* 本番環境では非表示 */
 .dev-only {
     display: none !important;
