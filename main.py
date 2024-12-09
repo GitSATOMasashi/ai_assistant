@@ -91,6 +91,17 @@ class TokenManager:
         self.user_tokens[user_id]["count"] += tokens_needed
         return True, self.monthly_limit - self.user_tokens[user_id]["count"]
 
+    def use_tokens(self, user_id: str, tokens: int):
+        # 現在の月の初日を取得
+        current_month = datetime.date.today().replace(day=1)
+        
+        # ユーザーの今月のトークン使用状況を初期化/更新
+        if user_id not in self.user_tokens or self.user_tokens[user_id]["date"] != current_month:
+            self.user_tokens[user_id] = {"date": current_month, "count": 0}
+        
+        # トークンを消費
+        self.user_tokens[user_id]["count"] += tokens
+
 token_manager = TokenManager(monthly_limit=1000000)
 
 @app.get("/", response_class=HTMLResponse)
@@ -121,34 +132,21 @@ async def chat(bot_id: str, request: dict):
     user_id = request.get("user_id", "default_user")
     token_info = token_manager.count_tokens(request["message"])
     
-    # 現在の残りトークン数を取得
+    # 現在の累積トークン数を取得
     current_tokens = token_manager.user_tokens.get(user_id, {"count": 0})["count"]
     remaining_tokens = token_manager.monthly_limit - current_tokens
     
     # ログ出力（送信時）
     print(f"""
 === 送信時のトークン状況 ===
-今月の使用可能トークン（初期値）：1,000,000
+今月の使用可能トークン（初期値）：{token_manager.monthly_limit}
 このメッセージで消費したトークン：{token_info["tokens"]}
 今月の累積消費トークン：{current_tokens + token_info["tokens"]}
 今月の使用可能トークン：{remaining_tokens - token_info["tokens"]}
 =========================""")
 
-    # トークン制限チェック
-    if token_info["tokens"] > remaining_tokens:
-        raise HTTPException(
-            status_code=429,
-            detail={
-                "error": "トークン制限に達しました",
-                "remaining_tokens": remaining_tokens
-            }
-        )
-    
     # トークンを消費
-    token_manager.user_tokens[user_id] = {
-        "date": datetime.date.today(),
-        "count": current_tokens + token_info["tokens"]
-    }
+    token_manager.use_tokens(user_id, token_info["tokens"])
     
     headers = {
         "Authorization": f"Bearer {DIFY_KEYS[bot_id]}",
@@ -186,16 +184,20 @@ async def chat(bot_id: str, request: dict):
                 
             # レスポンス取得後のトークン計算
             response_token_info = token_manager.count_tokens(response_data["answer"])
+            current_tokens = token_manager.user_tokens.get(user_id, {"count": 0})["count"]
             
             # ログ出力（受信時）
             print(f"""
 === 受信時のトークン状況 ===
-今月の使用可能トークン（初期値）：1,000,000
+今月の使用可能トークン（初期値）：{token_manager.monthly_limit}
 このメッセージで消費したトークン：{response_token_info["tokens"]}
-今月の累積消費トークン：{current_tokens + token_info["tokens"] + response_token_info["tokens"]}
-今月の使用可能トークン：{remaining_tokens - token_info["tokens"] - response_token_info["tokens"]}
+今月の累積消費トークン：{current_tokens + response_token_info["tokens"]}
+今月の使用可能トークン：{token_manager.monthly_limit - (current_tokens + response_token_info["tokens"])}
 =========================""")
 
+            # レスポンストークンを消費
+            token_manager.use_tokens(user_id, response_token_info["tokens"])
+            
             return response_data
             
     except UnicodeEncodeError as e:

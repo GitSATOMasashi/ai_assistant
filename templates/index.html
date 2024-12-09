@@ -590,13 +590,14 @@
                     });
                     
                     const tokenData = await response.json();
+                    const currentUsedTokens = 1000000 - tokenData.remaining_tokens;
                     
                     // 送信時のログ
                     console.log(`
 === 送信時のトークン状況 ===
 今月の使用可能トークン（初期値）：1,000,000
 このメッセージで消費したトークン：${tokenData.tokens}
-今月の累積消費トークン：${1000000 - tokenData.remaining_tokens + tokenData.tokens}
+今月の累積消費トークン：${currentUsedTokens + tokenData.tokens}
 今月の使用可能トークン：${tokenData.remaining_tokens - tokenData.tokens}
 ===========================`);
 
@@ -625,6 +626,7 @@
                     const loadingMessage = document.getElementById('loadingMessage');
                     loadingMessage.classList.remove('hidden');
 
+                    // メッセージ送信処理
                     const apiResponse = await fetch(`/chat/${currentBot}`, {
                         method: 'POST',
                         headers: {
@@ -677,14 +679,15 @@
                     });
                     
                     const outputTokenData = await outputTokenResponse.json();
+                    const updatedUsedTokens = currentUsedTokens + tokenData.tokens + outputTokenData.tokens;
                     
                     // 受信時のログ
                     console.log(`
 === 受信時のトークン状況 ===
 今月の使用可能トークン（初期値）：1,000,000
 このメッセージで消費したトークン：${outputTokenData.tokens}
-今月の累積消費トークン：${1000000 - outputTokenData.remaining_tokens + outputTokenData.tokens}
-今月の使用可能トークン：${outputTokenData.remaining_tokens - outputTokenData.tokens}
+今月の累積消費トークン：${updatedUsedTokens}
+今月の使用可能トークン：${1000000 - updatedUsedTokens}
 ===========================`);
 
                     // レスポンス後のトークン制限チェック
@@ -706,6 +709,10 @@
                         chat.conversation_id = data.conversation_id;
                         saveChats();  // LocalStorageに保存
                     }
+                    
+                    // 残りのトークン数を更新
+                    document.getElementById('remainingTokens').textContent = 
+                        (1000000 - updatedUsedTokens).toLocaleString();
                     
                 } catch (error) {
                     console.error('Error:', error);
