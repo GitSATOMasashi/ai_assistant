@@ -45,8 +45,8 @@ for key, value in DIFY_KEYS.items():
 
 # トークン管理クラス
 class TokenManager:
-    def __init__(self, daily_limit=30000):
-        self.daily_limit = daily_limit
+    def __init__(self, monthly_limit=1000000):
+        self.monthly_limit = monthly_limit
         self.user_tokens = {}
         # Claudeのエンコーディングを使用
         self.encoding = tiktoken.get_encoding("cl100k_base")
@@ -72,15 +72,16 @@ class TokenManager:
             }
 
     def check_and_update_tokens(self, user_id: str, text: str) -> tuple[bool, int]:
-        today = datetime.date.today()
+        # 現在の月の初日を取得
+        current_month = datetime.date.today().replace(day=1)
         
-        # ユーザーの今日のトークン使用状況を初期化/更新
-        if user_id not in self.user_tokens or self.user_tokens[user_id]["date"] != today:
-            self.user_tokens[user_id] = {"date": today, "count": 0}
+        # ユーザーの今月のトークン使用状況を初期化/更新
+        if user_id not in self.user_tokens or self.user_tokens[user_id]["date"] != current_month:
+            self.user_tokens[user_id] = {"date": current_month, "count": 0}
         
         # トークン数を計算
         tokens_needed = self.count_tokens(text)
-        tokens_remaining = self.daily_limit - self.user_tokens[user_id]["count"]
+        tokens_remaining = self.monthly_limit - self.user_tokens[user_id]["count"]
         
         # トークン制限チェック
         if tokens_needed > tokens_remaining:
@@ -88,9 +89,9 @@ class TokenManager:
         
         # トークンを消費
         self.user_tokens[user_id]["count"] += tokens_needed
-        return True, self.daily_limit - self.user_tokens[user_id]["count"]
+        return True, self.monthly_limit - self.user_tokens[user_id]["count"]
 
-token_manager = TokenManager()
+token_manager = TokenManager(monthly_limit=1000000)
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -108,7 +109,7 @@ async def calculate_tokens(request: dict):
         "tokens": token_info["tokens"],
         "method": token_info["method"],
         "success": token_info["success"],
-        "remaining_tokens": token_manager.daily_limit - token_manager.user_tokens.get(user_id, {"count": 0})["count"]
+        "remaining_tokens": token_manager.monthly_limit - token_manager.user_tokens.get(user_id, {"count": 0})["count"]
     }
 
 @app.post("/chat/{bot_id}")
@@ -116,14 +117,23 @@ async def chat(bot_id: str, request: dict):
     if bot_id not in DIFY_KEYS:
         raise HTTPException(status_code=400, detail="Invalid bot ID")
     
-    # トークン制限のチェックと更新
+    # トークン計算
     user_id = request.get("user_id", "default_user")
     token_info = token_manager.count_tokens(request["message"])
     
     # 現在の残りトークン数を取得
     current_tokens = token_manager.user_tokens.get(user_id, {"count": 0})["count"]
-    remaining_tokens = token_manager.daily_limit - current_tokens
+    remaining_tokens = token_manager.monthly_limit - current_tokens
     
+    # ログ出力（送信時）
+    print(f"""
+=== 送信時のトークン状況 ===
+今月の使用可能トークン（初期値）：1,000,000
+このメッセージで消費したトークン：{token_info["tokens"]}
+今月の累積消費トークン：{current_tokens + token_info["tokens"]}
+今月の使用可能トークン：{remaining_tokens - token_info["tokens"]}
+=========================""")
+
     # トークン制限チェック
     if token_info["tokens"] > remaining_tokens:
         raise HTTPException(
@@ -174,6 +184,18 @@ async def chat(bot_id: str, request: dict):
             if 'conversation_id' in response_data:
                 print(f"Response conversation_id: {response_data['conversation_id']}")
                 
+            # レスポンス取得後のトークン計算
+            response_token_info = token_manager.count_tokens(response_data["answer"])
+            
+            # ログ出力（受信時）
+            print(f"""
+=== 受信時のトークン状況 ===
+今月の使用可能トークン（初期値）：1,000,000
+このメッセージで消費したトークン：{response_token_info["tokens"]}
+今月の累積消費トークン：{current_tokens + token_info["tokens"] + response_token_info["tokens"]}
+今月の使用可能トークン：{remaining_tokens - token_info["tokens"] - response_token_info["tokens"]}
+=========================""")
+
             return response_data
             
     except UnicodeEncodeError as e:

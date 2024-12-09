@@ -54,7 +54,7 @@
                         リセット
                     </button>
                     <div class="text-sm text-white/90">
-                        本日の残りトークン数: <span id="remainingTokens">1,000</span>
+                        今月の残りトークン数: <span id="remainingTokens">1,000,000</span>
                     </div>
                 </div>
             </div>
@@ -248,8 +248,8 @@
 
             // トークン管理のクラスを修正
             class TokenManager {
-                constructor(dailyLimit = 30000) {
-                    this.dailyLimit = dailyLimit;
+                constructor(monthlyLimit = 1000000) {  // 変更: 月間100万トークン
+                    this.monthlyLimit = monthlyLimit;
                     this.loadFromStorage();
                 }
 
@@ -257,21 +257,21 @@
                     const stored = localStorage.getItem('tokenUsage');
                     if (stored) {
                         const data = JSON.parse(stored);
-                        // 日付が変わっていたらリセット
-                        const today = new Date().toDateString();
-                        if (data.date === today) {
+                        // 月が変わっていたらリセット
+                        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM形式
+                        if (data.month === currentMonth) {
                             this.usedTokens = data.usedTokens;
                             this.updateDisplay();
                             return;
                         }
                     }
-                    // 新しい日、またはデータがない場合
+                    // 新しい月、またはデータがない場合
                     this.resetTokens();
                 }
 
                 saveToStorage() {
                     const data = {
-                        date: new Date().toDateString(),
+                        month: new Date().toISOString().slice(0, 7),  // YYYY-MM形式
                         usedTokens: this.usedTokens
                     };
                     localStorage.setItem('tokenUsage', JSON.stringify(data));
@@ -284,7 +284,7 @@
                 }
 
                 getRemainingTokens() {
-                    return this.dailyLimit - this.usedTokens;
+                    return this.monthlyLimit - this.usedTokens;
                 }
 
                 useTokens(count) {
@@ -333,7 +333,7 @@
             }
 
             // トークンマネージャーのインスタンスを作成
-            const tokenManager = new TokenManager(30000);
+            const tokenManager = new TokenManager(1000000);  // 100万トークンで初期化
 
             // LocalStorageからチャット履歴を読み込む
             function loadChats() {
@@ -591,13 +591,14 @@
                     
                     const tokenData = await response.json();
                     
-                    // トークン計算方法をログ表示
-                    console.log(
-                        `残りトークン: ${document.getElementById('remainingTokens').textContent}トークン | ` +
-                        `トークン計算: ${tokenData.tokens}トークン ` +
-                        `(計算方法: ${tokenData.method === 'tiktoken' ? 'tiktoken (Claude)' : 'フォールバック'})` +
-                        `${tokenData.success ? '✅' : '⚠️'}`
-                    );
+                    // 送信時のログ
+                    console.log(`
+=== 送信時のトークン状況 ===
+今月の使用可能トークン（初期値）：1,000,000
+このメッセージで消費したトークン：${tokenData.tokens}
+今月の累積消費トークン：${1000000 - tokenData.remaining_tokens + tokenData.tokens}
+今月の使用可能トークン：${tokenData.remaining_tokens - tokenData.tokens}
+===========================`);
 
                     // トークン制限チェック
                     if (tokenData.remaining_tokens <= 0) {  // 残りトークンが0以下の場合
@@ -677,13 +678,14 @@
                     
                     const outputTokenData = await outputTokenResponse.json();
                     
-                    // 応答のトークン数をログ表示
-                    console.log(
-                        `残りトークン: ${document.getElementById('remainingTokens').textContent}トークン | ` +
-                        `応答トークン: ${outputTokenData.tokens}トークン ` +
-                        `(計算方法: ${outputTokenData.method === 'tiktoken' ? 'tiktoken (Claude)' : 'フォールバック'})` +
-                        `${outputTokenData.success ? '✅' : '⚠️'}`
-                    );
+                    // 受信時のログ
+                    console.log(`
+=== 受信時のトークン状況 ===
+今月の使用可能トークン（初期値）：1,000,000
+このメッセージで消費したトークン：${outputTokenData.tokens}
+今月の累積消費トークン：${1000000 - outputTokenData.remaining_tokens + outputTokenData.tokens}
+今月の使用可能トークン：${outputTokenData.remaining_tokens - outputTokenData.tokens}
+===========================`);
 
                     // レスポンス後のトークン制限チェック
                     const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
@@ -836,28 +838,29 @@
                 updateSendButtonState();  // ここで更新
             }
 
-            // トークン制限メッセージを生成する関数を追加
+            // トークン制限メッセージを生成する関数を修正
             function getTokenLimitMessage() {
-                const totalTokens = 30000;  // 1日の上限トークン数
+                const totalTokens = 1000000;  // 月間上限トークン数
                 const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
                 const usedTokens = totalTokens - remainingTokens;
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                tomorrow.setHours(0, 0, 0, 0);
+                const nextMonth = new Date();
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+                nextMonth.setDate(1);
+                nextMonth.setHours(0, 0, 0, 0);
                 
                 return `【トークン制限のお知らせ】
 
-トークンの本日分使用枠を使い切りました。
+トークンの今月分使用枠を使い切りました。
 
 ■ 次回利用可能時間
-${tomorrow.getFullYear()}年${tomorrow.getMonth() + 1}月${tomorrow.getDate()}日 0:00から
+${nextMonth.getFullYear()}年${nextMonth.getMonth() + 1}月1日 0:00から
 
 ■ 現在の使用状況
-本日の使用量: ${usedTokens.toLocaleString()} トークン
-1日の上限: ${totalTokens.toLocaleString()} トークン
+今月の使用量: ${usedTokens.toLocaleString()} トークン
+月間上限: ${totalTokens.toLocaleString()} トークン
 
 ■ ご利用再開までの選択肢
-1. 深夜0時の自動リセットをお待ちください
+1. 月初の自動リセットをお待ちください
 2. トークン使用枠の増枠をご検討ください
    → サポートLINEにてご相談を承ります。
    「講座生成ツールのトークン増枠」とお伝えください。
