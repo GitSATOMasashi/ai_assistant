@@ -233,75 +233,76 @@
 
         <script>
             function canSendMessage() {
-                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
-                if (remainingTokens <= 0) {
-                    showTokenLimitModal(getTokenLimitMessage());
-                    return false;
+                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent); // 残りトークン数を取得
+                if (remainingTokens <= 0) { // 残りトークン数が0以下の場合
+                    showTokenLimitModal(getTokenLimitMessage()); // トークン制限モーダルを表示
+                    return false; // メッセージ送信を禁止
                 }
-                return true;
+                return true; // メッセージ送信を許可
             }
             
             // チャットの状態管理
-            let chats = [];
-            let currentChatId = null;
-            let currentBot = null;
+            let chats = []; // チャット履歴を管理する配列
+            let currentChatId = null; // 現在選択中のチャットID
+            let currentBot = null; // 現在選択中のボットID
 
             // トークン管理のクラスを修正
-            class TokenManager {
+            class TokenManager { // トークン管理クラス
                 constructor(monthlyLimit = 1000000) {  // 変更: 月間100万トークン
-                    this.monthlyLimit = monthlyLimit;
-                    this.loadFromStorage();
+                    this.monthlyLimit = monthlyLimit; // 月間トークン制限
+                    this.loadFromStorage(); // ストレージからトークン使用量を読み込む
                 }
 
-                loadFromStorage() {
-                    const stored = localStorage.getItem('tokenUsage');
-                    if (stored) {
-                        const data = JSON.parse(stored);
+                loadFromStorage() { // ストレージからトークン使用量を読み込む
+                    const stored = localStorage.getItem('tokenUsage'); // ストレージからトークン使用量を取得
+                    if (stored) { // ストレージにトークン使用量がある場合
+                        const data = JSON.parse(stored); // データをJSON形式にパース
                         // 月が変わっていたらリセット
                         const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM形式
-                        if (data.month === currentMonth) {
-                            this.usedTokens = data.usedTokens;
-                            this.updateDisplay();
+                        if (data.month === currentMonth) { // 月が変わっていたらリセット
+                            this.usedTokens = data.usedTokens; // 使用済みトークン数を更新
+                            this.updateDisplay(); // 残りトークン数を更新
                             return;
                         }
                     }
                     // 新しい月、またはデータがない場合
-                    this.resetTokens();
+                    this.resetTokens(); // トークン使用量をリセット
                 }
 
-                saveToStorage() {
-                    const data = {
+                saveToStorage() { // ストレージにトークン使用量を保存
+                    const data = { // データを作成
                         month: new Date().toISOString().slice(0, 7),  // YYYY-MM形式
-                        usedTokens: this.usedTokens
+                        usedTokens: this.usedTokens // 使用済みトークン数
                     };
-                    localStorage.setItem('tokenUsage', JSON.stringify(data));
+                    localStorage.setItem('tokenUsage', JSON.stringify(data)); // データをJSON形式に変換してストレージに保存
                 }
 
                 resetTokens() {
-                    this.usedTokens = 0;
-                    this.saveToStorage();
-                    this.updateDisplay();
+                    this.usedTokens = 0; // 使用済みトークン数をリセット
+                    this.saveToStorage(); // ストレージに保存
+                    this.updateDisplay(); // 残りトークン数を更新
                 }
 
                 getRemainingTokens() {
-                    return this.monthlyLimit - this.usedTokens;
+                    return this.monthlyLimit - this.usedTokens; // 残りトークン数を計算
                 }
 
                 useTokens(count) {
-                    this.usedTokens += count;
-                    this.saveToStorage();
-                    this.updateDisplay();
-                    return this.getRemainingTokens();
+                    this.usedTokens += count; // 使用済みトークン数を更新
+                    this.saveToStorage(); // ストレージに保存
+                    this.updateDisplay(); // 残りトークン数を更新
+                    return this.getRemainingTokens(); // 残りトークン数を返す
                 }
 
-                updateDisplay() {
-                    document.getElementById('remainingTokens').textContent = this.getRemainingTokens();
+                updateDisplay() { // 残りトークン数を更新
+                    document.getElementById('remainingTokens').textContent = 
+                        this.getRemainingTokens().toLocaleString(); // カンマ区切りでフォーマット
                 }
 
                 // トークン計算をサーバーに委譲
-                async calculateTokens(text) {
-                    try {
-                        const response = await fetch('/calculate_tokens', {
+                async calculateTokens(text) { // トークン計算をサーバーに委譲
+                    try { // エラーハンドリング
+                        const response = await fetch('/calculate_tokens', { // トークン計算APIにリクエスト
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -589,8 +590,8 @@
                         body: JSON.stringify({ text: message })
                     });
                     
-                    const tokenData = await response.json();
-                    const currentUsedTokens = 1000000 - tokenData.remaining_tokens;
+                    const tokenData = await response.json(); // トークンデータを取得
+                    const currentUsedTokens = 1000000 - tokenData.remaining_tokens; // 使用済みトークンを計算
                     
                     // 送信時のログ
                     console.log(`
@@ -826,34 +827,34 @@
             // トークン計算の関数内で
             async function calculateTokens(message) {
                 // ... 既存のコード ...
-                const response = await fetch('/calculate_tokens', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: message, user_id: userId })
+                const response = await fetch('/calculate_tokens', { // トークン計算APIを呼び出す
+                    method: 'POST',  // POSTメソッドを使用
+                    headers: { 'Content-Type': 'application/json' }, // ヘッダーを追加
+                    body: JSON.stringify({ text: message, user_id: userId }) // ユーザーIDを含める
                 });
-                const tokenData = await response.json();
-                document.getElementById('remainingTokens').textContent = tokenData.remaining_tokens;
+                const tokenData = await response.json(); // トークンデータを取得
+                document.getElementById('remainingTokens').textContent = 
+                tokenData.remaining_tokens.toLocaleString(); // 残りトークン数を更新
                 updateSendButtonState();  // ここで更新
                 return tokenData;
             }
 
             // メッセージ送信後のレスポンス処理時
-            async function handleResponse(response) {
-                // ... 既存のコード ...
-                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent) - outputTokenData.tokens;
-                document.getElementById('remainingTokens').textContent = remainingTokens;
+            async function handleResponse(response) { // レスポンスを受信した時
+                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent) - outputTokenData.tokens; // 残りトークン数を更新
+                document.getElementById('remainingTokens').textContent = remainingTokens; // 残りトークン数を更新
                 updateSendButtonState();  // ここで更新
             }
 
             // トークン制限メッセージを生成する関数を修正
-            function getTokenLimitMessage() {
+            function getTokenLimitMessage() { // トークン制限メッセージを生成する関数
                 const totalTokens = 1000000;  // 月間上限トークン数
-                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent);
-                const usedTokens = totalTokens - remainingTokens;
-                const nextMonth = new Date();
-                nextMonth.setMonth(nextMonth.getMonth() + 1);
-                nextMonth.setDate(1);
-                nextMonth.setHours(0, 0, 0, 0);
+                const remainingTokens = parseInt(document.getElementById('remainingTokens').textContent); // 残りトークン数を取得
+                const usedTokens = totalTokens - remainingTokens; // 使用済みトークン数を計算
+                const nextMonth = new Date(); // 次の月を取得
+                nextMonth.setMonth(nextMonth.getMonth() + 1); // 次の月を設定
+                nextMonth.setDate(1); // 次の月の1日を設定
+                nextMonth.setHours(0, 0, 0, 0); // 次の月の0時0分0秒を設定
                 
                 return `【トークン制限のお知らせ】
 
