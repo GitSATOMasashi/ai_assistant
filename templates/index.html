@@ -170,6 +170,12 @@
                 </svg>
                 タイトルの編集
             </button>
+            <button onclick="editConversationId()" class="chat-menu-item">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                会話IDの編集
+            </button>
             <button onclick="togglePinChat()" class="chat-menu-item">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
@@ -962,6 +968,21 @@ ${nextMonth.getFullYear()}年${nextMonth.getMonth() + 1}月1日 0:00から
                         button.disabled = false;
                     }, 2000);
                 });
+            }
+
+            function editConversationId() {
+                const chat = chats.find(c => c.id === currentChatId);
+                if (!chat) return;
+
+                const currentId = chat.conversation_id || '未設定';
+                const newId = prompt('会話IDを入力してください：\n（空白にすると未設定になります）', currentId);
+                
+                if (newId !== null) {  // キャンセルされていない場合
+                    chat.conversation_id = newId.trim() || null;
+                    saveChats();
+                }
+                
+                document.getElementById('chatMenu').classList.add('hidden');
             }
         </script>
     </body>
